@@ -19,6 +19,21 @@ impl Byte {
     pub fn set_value(&mut self, value: u8) {
         self.0 = value;
     }
+
+    #[inline]
+    pub fn increment(&mut self) -> Self {
+        self.0.wrapping_add(1).into()
+    }
+
+    #[inline]
+    pub fn decrement(&mut self) -> Self {
+        self.0.wrapping_sub(1).into()
+    }
+
+    #[inline]
+    pub fn add(&mut self, byte: Byte) -> Self {
+        self.0.wrapping_add(u8::from(byte)).into()
+    }
 }
 
 impl From<u8> for Byte {

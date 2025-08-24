@@ -1,27 +1,23 @@
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 
-pub const RAM_SIZE: usize = 0x8000; // 32KiB
+pub const ROM_SIZE: usize = 0x8000; // 32KiB
 
 #[derive(Debug, Clone)]
-pub struct RAM {
-    data: [u8; RAM_SIZE],
+pub struct ROM {
+    data: [u8; ROM_SIZE],
 }
 
-impl Default for RAM {
+impl Default for ROM {
     fn default() -> Self {
         Self {
-            data: [0; RAM_SIZE],
+            data: [0; ROM_SIZE],
         }
     }
 }
 
-impl RAM {
+impl ROM {
     pub fn read(&self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x8000) as usize].into()
-    }
-
-    pub fn write(&mut self, addr: Address, value: Byte) {
-        self.data[(u16::from(addr) & 0x8000) as usize] = value.into();
     }
 }

@@ -51,6 +51,26 @@ impl Word {
     pub fn set_high_byte(&mut self, byte: Byte) {
         self.0 = (self.0 & 0x00FF) | (u16::from(byte) << 8);
     }
+
+    #[inline]
+    pub fn increment(&mut self) -> Self {
+        self.0.wrapping_add(1).into()
+    }
+
+    #[inline]
+    pub fn decrement(&mut self) -> Self {
+        self.0.wrapping_sub(1).into()
+    }
+
+    #[inline]
+    pub fn add_byte(&mut self, byte: Byte) -> Self {
+        self.0.wrapping_add(u16::from(byte)).into()
+    }
+
+    #[inline]
+    pub fn add_word(&mut self, word: Word) -> Self {
+        self.0.wrapping_add(word.0).into()
+    }
 }
 
 impl From<u8> for Word {

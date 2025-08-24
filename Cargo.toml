@@ -3,4 +3,5 @@ members = ["core", "app"]
 resolver = "2"
 
 [workspace.dependencies]
+lmvc8-core = { path = "core" }
 binrw = "0.15.0"

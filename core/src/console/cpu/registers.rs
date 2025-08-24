@@ -3,7 +3,8 @@ use crate::console::types::word::Word;
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct CPURegisters {
-    /// Accumulator
+    /// Accumulator for 8-Bit operations
+    /// For 16-bit operations, AB will act as the accumulator.
     a: Byte,
     /// Flags
     f: Byte,
@@ -46,12 +47,8 @@ impl CPURegisters {
 
     pub fn get_r16(&self, r16: R16) -> Word {
         match r16 {
-            R16::AF => Word::from_le(self.f, self.a),
-            R16::BC => Word::from_le(self.c, self.b),
-            R16::DE => Word::from_le(self.e, self.d),
-            R16::GH => Word::from_le(self.h, self.g),
+            R16::AB => Word::from_le(self.b, self.a),
             R16::CD => Word::from_le(self.d, self.c),
-            R16::EG => Word::from_le(self.g, self.e),
             R16::PC => self.pc,
             R16::SP => self.sp,
         }
@@ -59,31 +56,25 @@ impl CPURegisters {
 
     pub fn set_r16(&mut self, r16: R16, word: Word) {
         match r16 {
-            R16::AF => {
+            R16::AB => {
                 self.a = word.high_byte();
-                self.f = word.low_byte();
-            }
-            R16::BC => {
-                self.b = word.high_byte();
-                self.c = word.low_byte();
-            }
-            R16::DE => {
-                self.d = word.high_byte();
-                self.e = word.low_byte();
-            }
-            R16::GH => {
-                self.g = word.high_byte();
+                self.b = word.low_byte();
             }
             R16::CD => {
                 self.c = word.high_byte();
                 self.d = word.low_byte();
             }
-            R16::EG => {
-                self.e = word.high_byte();
-                self.g = word.low_byte();
-            }
             R16::PC => self.pc = word,
             R16::SP => self.sp = word,
+        }
+    }
+
+    pub fn increment_r16(&mut self, r16: R16) {
+        match r16 {
+            R16::AB => self.set_r16(R16::AB, self.get_r16(R16::AB).increment()),
+            R16::CD => self.set_r16(R16::CD, self.get_r16(R16::CD).increment()),
+            R16::PC => self.pc = self.pc.increment(),
+            R16::SP => self.sp = self.sp.increment(),
         }
     }
 }
@@ -104,14 +95,10 @@ pub enum R8 {
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum R16 {
-    AF = 0,
-    BC = 1,
-    DE = 2,
-    GH = 3,
-    CD = 4,
-    EG = 5,
-    PC = 6,
-    SP = 7,
+    AB,
+    CD,
+    SP,
+    PC,
 }
 
 impl From<u8> for R8 {
@@ -132,6 +119,24 @@ impl From<u8> for R8 {
 
 impl From<R8> for u8 {
     fn from(value: R8) -> Self {
+        value as u8
+    }
+}
+
+impl From<u8> for R16 {
+    fn from(value: u8) -> Self {
+        match value & 0b11 {
+            0 => R16::AB,
+            1 => R16::CD,
+            2 => R16::SP,
+            3 => R16::PC,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<R16> for u8 {
+    fn from(value: R16) -> Self {
         value as u8
     }
 }
