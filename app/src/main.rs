@@ -6,7 +6,7 @@ fn main() {
     let c = Compiler::new()
         .no_op()
         .add_r16(R16::SP)
-        .add_r16(R16::PC)
+        .add_r16(R16::HL)
         .repeat(5, |c| {
             c.add_r8(R8::A)
                 .add_r8(R8::B)

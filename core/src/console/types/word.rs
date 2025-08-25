@@ -33,6 +33,16 @@ impl Word {
     }
 
     #[inline]
+    pub fn is_zero(&self) -> bool {
+        self.0 == 0
+    }
+
+    #[inline]
+    pub fn is_negative(&self) -> bool {
+        self.0 & 0b10000000_00000000 != 0
+    }
+
+    #[inline]
     pub fn low_byte(&self) -> Byte {
         Byte::new(self.0 as u8)
     }
@@ -53,23 +63,27 @@ impl Word {
     }
 
     #[inline]
-    pub fn increment(&mut self) -> Self {
-        self.0.wrapping_add(1).into()
+    pub fn increment(&self) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_add(1);
+        (result.into(), overflow)
     }
 
     #[inline]
-    pub fn decrement(&mut self) -> Self {
-        self.0.wrapping_sub(1).into()
+    pub fn decrement(&self) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_sub(1);
+        (result.into(), overflow)
     }
 
     #[inline]
-    pub fn add_byte(&mut self, byte: Byte) -> Self {
-        self.0.wrapping_add(u16::from(byte)).into()
+    pub fn add_byte(&self, byte: Byte) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_add(u16::from(byte));
+        (result.into(), overflow)
     }
 
     #[inline]
-    pub fn add_word(&mut self, word: Word) -> Self {
-        self.0.wrapping_add(word.0).into()
+    pub fn add_word(&self, word: Word) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_add(word.0);
+        (result.into(), overflow)
     }
 }
 

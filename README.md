@@ -5,4 +5,5 @@ An emulator and builder-pattern compiler for a hypothetical game console.
 ## Technical Specification
 
 - Little Endian
-- Complex Instruction Set (similar to GameBoy's SM83)
+- CPU register layout inspired by GameBoy's SM83
+- Complex Instruction Set

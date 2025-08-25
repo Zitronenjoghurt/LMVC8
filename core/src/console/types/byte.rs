@@ -21,18 +21,31 @@ impl Byte {
     }
 
     #[inline]
-    pub fn increment(&mut self) -> Self {
-        self.0.wrapping_add(1).into()
+    pub fn is_zero(&self) -> bool {
+        self.0 == 0
     }
 
     #[inline]
-    pub fn decrement(&mut self) -> Self {
-        self.0.wrapping_sub(1).into()
+    pub fn is_negative(&self) -> bool {
+        self.0 & 0b1000_0000 != 0
     }
 
     #[inline]
-    pub fn add(&mut self, byte: Byte) -> Self {
-        self.0.wrapping_add(u8::from(byte)).into()
+    pub fn increment(&self) -> (Self, bool) {
+        let (value, overflow) = self.0.overflowing_add(1);
+        (value.into(), overflow)
+    }
+
+    #[inline]
+    pub fn decrement(&self) -> (Self, bool) {
+        let (value, overflow) = self.0.overflowing_sub(1);
+        (value.into(), overflow)
+    }
+
+    #[inline]
+    pub fn add(&self, byte: Byte) -> (Self, bool) {
+        let (value, overflow) = self.0.overflowing_add(byte.0);
+        (value.into(), overflow)
     }
 }
 
