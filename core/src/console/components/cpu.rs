@@ -6,7 +6,7 @@ use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;
 
-mod alu;
+pub mod alu;
 pub mod instructions;
 pub mod registers;
 

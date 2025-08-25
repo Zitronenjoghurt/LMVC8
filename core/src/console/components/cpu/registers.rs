@@ -2,6 +2,7 @@ use crate::console::components::bus::Bus;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;
+use std::fmt::Display;
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeneralRegisters {
@@ -133,6 +134,12 @@ impl From<R8> for u8 {
     }
 }
 
+impl Display for R8 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl From<u8> for R16 {
     fn from(value: u8) -> Self {
         match value & 0b11 {
@@ -148,5 +155,11 @@ impl From<u8> for R16 {
 impl From<R16> for u8 {
     fn from(value: R16) -> Self {
         value as u8
+    }
+}
+
+impl Display for R16 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

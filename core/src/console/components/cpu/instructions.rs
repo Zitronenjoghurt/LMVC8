@@ -1,4 +1,5 @@
 use crate::console::components::cpu::registers::{R16, R8};
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub enum CPUInstruction {
@@ -13,6 +14,23 @@ pub enum CPUInstruction {
     LoadR16((R16, R16)),
     LoadR8i(R8),
     LoadR16i(R16),
+}
+
+impl CPUInstruction {
+    pub fn byte_count(&self) -> usize {
+        match self {
+            Self::NoOp
+            | Self::Halt
+            | Self::AddR8(_)
+            | Self::AddR16(_)
+            | Self::SubR8(_)
+            | Self::SubR16(_)
+            | Self::LoadR8(_)
+            | Self::LoadR16(_) => 1,
+            Self::LoadR8i(_) => 2,
+            Self::LoadR16i(_) => 3,
+        }
+    }
 }
 
 impl From<u8> for CPUInstruction {
@@ -261,5 +279,22 @@ impl TryFrom<CPUInstruction> for u8 {
         };
 
         Ok(value)
+    }
+}
+
+impl Display for CPUInstruction {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::NoOp => write!(f, "NOP"),
+            Self::Halt => write!(f, "HLT"),
+            Self::AddR8(r8) => write!(f, "ADD {r8}"),
+            Self::AddR16(r16) => write!(f, "ADD {r16}"),
+            Self::SubR8(r8) => write!(f, "SUB {r8}"),
+            Self::SubR16(r16) => write!(f, "SUB {r16}"),
+            Self::LoadR8((r1, r2)) => write!(f, "LD {r1}, {r2}"),
+            Self::LoadR16((r1, r2)) => write!(f, "LD {r1}, {r2}"),
+            Self::LoadR8i(r8) => write!(f, "LD {r8}, n"),
+            Self::LoadR16i(r16) => write!(f, "LD {r16}, nn"),
+        }
     }
 }

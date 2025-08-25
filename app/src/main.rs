@@ -1,28 +1,24 @@
-use lmvc8_core::compiler::Compiler;
-use lmvc8_core::console::components::cpu::registers::R8;
-use lmvc8_core::console::Console;
-use lmvc8_core::emulator::event::EmulatorEvent;
-use lmvc8_core::emulator::Emulator;
+use crate::app::LMVC8App;
+
+mod app;
+mod components;
+mod state;
+mod views;
+mod windows;
 
 fn main() {
-    let rom = Compiler::new()
-        .load_r8i(R8::A, 5)
-        .load_r8i(R8::B, 12)
-        .add_r8(R8::B)
-        .compile();
+    let native_options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_maximized(true)
+            .with_title("LMVC8"),
+        persist_window: true,
+        ..Default::default()
+    };
 
-    let console = Console::new().load_rom(rom);
-    let emulator = Emulator::start(console);
-
-    emulator.run();
-    loop {
-        if let Some(event) = emulator.poll_event() {
-            match event {
-                EmulatorEvent::Halted(console) => {
-                    println!("{:?}", console.cpu);
-                    break;
-                }
-            }
-        }
-    }
+    eframe::run_native(
+        "LMVC8",
+        native_options,
+        Box::new(|cc| Ok(Box::new(LMVC8App::new(cc)))),
+    )
+    .expect("Failed to run egui application.");
 }

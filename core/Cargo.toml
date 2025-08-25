@@ -7,6 +7,9 @@ edition = "2024"
 default = []
 compiler = []
 debugger = []
+disassembler = []
+emulator = []
 
 [dependencies]
 binrw = { workspace = true }
+thiserror = { workspace = true }
