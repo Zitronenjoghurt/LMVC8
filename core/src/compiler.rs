@@ -1,6 +1,6 @@
 use crate::compiler::node::Node;
-use crate::console::cpu::instructions::CPUInstruction;
-use crate::console::rom::ROM;
+use crate::console::components::cpu::instructions::CPUInstruction;
+use crate::console::components::rom::ROM;
 
 mod layers;
 mod node;

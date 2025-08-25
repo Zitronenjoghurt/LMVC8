@@ -1,4 +1,4 @@
-use crate::console::bus::Bus;
+use crate::console::components::bus::Bus;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;

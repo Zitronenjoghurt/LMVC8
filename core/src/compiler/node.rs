@@ -1,5 +1,5 @@
 use crate::compiler::CompilationContext;
-use crate::console::cpu::instructions::CPUInstruction;
+use crate::console::components::cpu::instructions::CPUInstruction;
 
 #[derive(Debug)]
 pub enum Node {

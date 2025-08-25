@@ -1,15 +1,18 @@
-use crate::console::ram::RAM;
-use crate::console::rom::ROM;
+use crate::console::components::ram::RAM;
+use crate::console::components::rom::ROM;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 
 pub struct Bus<'a> {
     pub rom: &'a mut ROM,
     pub ram: &'a mut RAM,
+    pub step_cycles: u64,
 }
 
 impl<'a> Bus<'a> {
-    pub fn tick(&mut self) {}
+    pub fn tick(&mut self) {
+        self.step_cycles += 1;
+    }
 
     pub fn read(&mut self, addr: Address) -> Byte {
         self.tick();
@@ -23,7 +26,7 @@ impl<'a> Bus<'a> {
         self.tick();
         match u16::from(addr) {
             0x0..0x8000 => {}
-            0x8000..=u16::MAX => self.ram.write(addr, value),
+            0x8000..=u16::MAX => self.ram.write(addr - 0x8000.into(), value),
         }
     }
 }

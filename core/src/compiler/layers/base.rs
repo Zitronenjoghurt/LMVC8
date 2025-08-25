@@ -1,6 +1,6 @@
 use crate::compiler::node::Node;
 use crate::compiler::Compiler;
-use crate::console::cpu::instructions::CPUInstruction;
+use crate::console::components::cpu::instructions::CPUInstruction;
 
 impl Compiler {
     pub fn new() -> Self {

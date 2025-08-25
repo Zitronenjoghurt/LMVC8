@@ -1,7 +1,8 @@
-mod bus;
-pub mod cpu;
-mod ram;
-pub mod rom;
+use crate::console::step::ConsoleStep;
+use components::{bus, cpu, ram, rom};
+
+pub mod components;
+mod step;
 pub mod types;
 
 #[derive(Debug, Default, Clone)]
@@ -16,19 +17,27 @@ impl Console {
         Self::default()
     }
 
-    pub fn load_rom(&mut self, rom: rom::ROM) {
+    pub fn load_rom(mut self, rom: rom::ROM) -> Self {
         self.rom = rom;
+        self
     }
 
-    pub fn step(&mut self) -> bool {
+    pub fn step(&mut self) -> ConsoleStep {
         let mut bus = bus::Bus {
             rom: &mut self.rom,
             ram: &mut self.ram,
+            step_cycles: 0,
         };
-        self.cpu.step(&mut bus)
+
+        let do_continue = self.cpu.step(&mut bus);
+
+        ConsoleStep {
+            cycles: bus.step_cycles,
+            do_continue,
+        }
     }
 
     pub fn step_till_halt(&mut self) {
-        while self.step() {}
+        while self.step().do_continue {}
     }
 }

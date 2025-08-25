@@ -1,5 +1,6 @@
 use crate::console::types::word::Word;
 use binrw::{BinRead, BinWrite};
+use std::ops::Sub;
 
 #[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
 #[brw(little)]
@@ -48,5 +49,13 @@ impl From<Address> for Word {
     #[inline]
     fn from(value: Address) -> Self {
         value.value()
+    }
+}
+
+impl Sub for Address {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self.0.sub_word(rhs.0).0.into()
     }
 }

@@ -1,11 +1,16 @@
 use crate::compiler::Compiler;
-use crate::console::cpu::instructions::CPUInstruction;
-use crate::console::cpu::registers::{R16, R8};
+use crate::console::components::cpu::instructions::CPUInstruction;
+use crate::console::components::cpu::registers::{R16, R8};
 
 impl Compiler {
     /// Will do nothing
     pub fn no_op(self) -> Self {
         self.push_instruction(CPUInstruction::NoOp)
+    }
+
+    /// Halt
+    pub fn halt(self) -> Self {
+        self.push_instruction(CPUInstruction::Halt)
     }
 
     /// Adds the specified register to the A register (wrapping)

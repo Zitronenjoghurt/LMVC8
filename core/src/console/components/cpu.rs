@@ -1,7 +1,7 @@
-use crate::console::bus::Bus;
-use crate::console::cpu::alu::ALU;
-use crate::console::cpu::instructions::CPUInstruction;
-use crate::console::cpu::registers::{GeneralRegisters, R16, R8};
+use crate::console::components::bus::Bus;
+use crate::console::components::cpu::alu::ALU;
+use crate::console::components::cpu::instructions::CPUInstruction;
+use crate::console::components::cpu::registers::{GeneralRegisters, R16, R8};
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;

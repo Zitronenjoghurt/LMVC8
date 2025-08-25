@@ -1,4 +1,4 @@
-use crate::console::cpu::registers::{R16, R8};
+use crate::console::components::cpu::registers::{R16, R8};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub enum CPUInstruction {

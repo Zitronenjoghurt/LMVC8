@@ -18,10 +18,10 @@ impl Default for RAM {
 
 impl RAM {
     pub fn read(&self, addr: Address) -> Byte {
-        self.data[(u16::from(addr) & 0x8000) as usize].into()
+        self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }
 
     pub fn write(&mut self, addr: Address, value: Byte) {
-        self.data[(u16::from(addr) & 0x8000) as usize] = value.into();
+        self.data[(u16::from(addr) & 0x7FFF) as usize] = value.into();
     }
 }

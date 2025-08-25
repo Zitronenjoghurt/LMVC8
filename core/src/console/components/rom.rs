@@ -10,9 +10,14 @@ pub struct ROM {
 
 impl ROM {
     pub fn new(data: Vec<u8>) -> Option<Self> {
-        Some(Self {
-            data: data.try_into().ok()?,
-        })
+        if data.len() > ROM_SIZE {
+            return None;
+        }
+
+        let mut rom_data = [0u8; ROM_SIZE];
+        rom_data[..data.len()].copy_from_slice(&data);
+
+        Some(Self { data: rom_data })
     }
 }
 
@@ -26,6 +31,6 @@ impl Default for ROM {
 
 impl ROM {
     pub fn read(&self, addr: Address) -> Byte {
-        self.data[(u16::from(addr) & 0x8000) as usize].into()
+        self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }
 }
