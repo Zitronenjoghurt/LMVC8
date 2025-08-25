@@ -75,14 +75,38 @@ impl Word {
     }
 
     #[inline]
-    pub fn add_byte(&self, byte: Byte) -> (Self, bool) {
+    pub fn add_byte_low(&self, byte: Byte) -> (Self, bool) {
         let (result, overflow) = self.0.overflowing_add(u16::from(byte));
+        (result.into(), overflow)
+    }
+
+    #[inline]
+    pub fn add_byte_high(&self, byte: Byte) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_add(u16::from(byte) << 8);
         (result.into(), overflow)
     }
 
     #[inline]
     pub fn add_word(&self, word: Word) -> (Self, bool) {
         let (result, overflow) = self.0.overflowing_add(word.0);
+        (result.into(), overflow)
+    }
+
+    #[inline]
+    pub fn sub_byte_low(&self, byte: Byte) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_sub(u16::from(byte));
+        (result.into(), overflow)
+    }
+
+    #[inline]
+    pub fn sub_byte_high(&self, byte: Byte) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_sub(u16::from(byte) << 8);
+        (result.into(), overflow)
+    }
+
+    #[inline]
+    pub fn sub_word(&self, word: Word) -> (Self, bool) {
+        let (result, overflow) = self.0.overflowing_sub(word.0);
         (result.into(), overflow)
     }
 }

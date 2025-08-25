@@ -3,5 +3,10 @@ name = "lmvc8-core"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+compiler = []
+debugger = []
+
 [dependencies]
 binrw = { workspace = true }

@@ -1,32 +1,34 @@
-use crate::console::bus::Bus;
-use crate::console::rom::ROM;
-
 mod bus;
 pub mod cpu;
 mod ram;
-mod rom;
+pub mod rom;
 pub mod types;
 
 #[derive(Debug, Default, Clone)]
 pub struct Console {
-    cpu: cpu::CPU,
-    rom: rom::ROM,
-    ram: ram::RAM,
+    pub cpu: cpu::CPU,
+    pub rom: rom::ROM,
+    pub ram: ram::RAM,
 }
 
 impl Console {
-    pub fn new(rom: ROM) -> Self {
-        Self {
-            rom,
-            ..Default::default()
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    pub fn step(&mut self) {
-        let mut bus = Bus {
+    pub fn load_rom(&mut self, rom: rom::ROM) {
+        self.rom = rom;
+    }
+
+    pub fn step(&mut self) -> bool {
+        let mut bus = bus::Bus {
             rom: &mut self.rom,
             ram: &mut self.ram,
         };
-        self.cpu.step(&mut bus);
+        self.cpu.step(&mut bus)
+    }
+
+    pub fn step_till_halt(&mut self) {
+        while self.step() {}
     }
 }

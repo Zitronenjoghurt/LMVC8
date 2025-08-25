@@ -47,6 +47,12 @@ impl Byte {
         let (value, overflow) = self.0.overflowing_add(byte.0);
         (value.into(), overflow)
     }
+
+    #[inline]
+    pub fn sub(&self, byte: Byte) -> (Self, bool) {
+        let (value, overflow) = self.0.overflowing_sub(byte.0);
+        (value.into(), overflow)
+    }
 }
 
 impl From<u8> for Byte {

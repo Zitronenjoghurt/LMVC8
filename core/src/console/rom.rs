@@ -8,6 +8,14 @@ pub struct ROM {
     data: [u8; ROM_SIZE],
 }
 
+impl ROM {
+    pub fn new(data: Vec<u8>) -> Option<Self> {
+        Some(Self {
+            data: data.try_into().ok()?,
+        })
+    }
+}
+
 impl Default for ROM {
     fn default() -> Self {
         Self {
