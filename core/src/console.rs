@@ -46,8 +46,4 @@ impl Console {
             do_continue,
         }
     }
-
-    pub fn step_till_halt(&mut self) {
-        while self.step().do_continue {}
-    }
 }

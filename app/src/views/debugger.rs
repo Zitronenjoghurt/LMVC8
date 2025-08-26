@@ -45,6 +45,11 @@ impl DebuggerView {
             if ui.button("⟲").clicked() {
                 state.debugger.reset();
             }
+
+            ui.small(format!(
+                "{} Cycles/s",
+                state.debugger.format_cycles_per_second()
+            ));
         });
 
         ui.separator();

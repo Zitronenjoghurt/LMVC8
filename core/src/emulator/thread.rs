@@ -3,7 +3,10 @@ use crate::emulator::command::{EmulatorCommand, EmulatorCommandReceiver};
 use crate::emulator::event::EmulatorEventSender;
 use crate::emulator::state::EmulatorState;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
+
+const COMMAND_INTERVAL_MS: u64 = 10;
+const UPDATE_INTERVAL_MS: u64 = 16;
 
 struct EmulatorThreadContext {
     console: Console,
@@ -15,6 +18,12 @@ struct EmulatorThreadContext {
     running: bool,
     halt: bool,
     nanos_per_cycle: u64,
+    cycle_count: u64,
+    cycles_per_second: u64,
+    last_command: Instant,
+    last_second: Instant,
+    last_step: Instant,
+    last_update: Instant,
 }
 
 impl EmulatorThreadContext {
@@ -35,16 +44,25 @@ impl EmulatorThreadContext {
             running: false,
             halt: false,
             nanos_per_cycle: 0,
+            cycle_count: 0,
+            cycles_per_second: 0,
+            last_command: Instant::now(),
+            last_second: Instant::now(),
+            last_step: Instant::now(),
+            last_update: Instant::now(),
         }
     }
 
     fn run(mut self) {
         loop {
-            if let Some(command) = self.command_receiver.poll() {
-                let shutdown = self.handle_command(command);
-                if shutdown {
-                    break;
+            if self.last_command.elapsed() > Duration::from_millis(COMMAND_INTERVAL_MS) {
+                if let Some(command) = self.command_receiver.poll() {
+                    let shutdown = self.handle_command(command);
+                    if shutdown {
+                        break;
+                    }
                 }
+                self.last_command = Instant::now();
             }
 
             if self.running && !self.halt {
@@ -64,15 +82,16 @@ impl EmulatorThreadContext {
     }
 
     fn step(&mut self) {
-        let before = std::time::Instant::now();
+        let since_last_step = self.last_step.elapsed();
         let step = self.console.step();
+        self.update_cycle_metrics(step.cycles);
         self.update_state();
-        let after = std::time::Instant::now();
 
-        let elapsed = after.duration_since(before);
-        std::thread::sleep(
-            Duration::from_nanos(self.nanos_per_cycle * step.cycles).saturating_sub(elapsed),
-        );
+        let sleep_duration = Duration::from_nanos(self.nanos_per_cycle * step.cycles)
+            .saturating_sub(since_last_step);
+        if !sleep_duration.is_zero() {
+            std::thread::sleep(sleep_duration);
+        }
 
         #[cfg(feature = "debugger")]
         self.debug();
@@ -80,14 +99,31 @@ impl EmulatorThreadContext {
         if !step.do_continue {
             self.halt();
         }
+
+        self.last_step = Instant::now();
     }
 
     fn update_state(&mut self) {
+        if (self.last_update.elapsed() < Duration::from_millis(UPDATE_INTERVAL_MS)) {
+            return;
+        }
+
+        self.last_update = Instant::now();
         if let Ok(mut state_lock) = self.state.try_lock() {
             state_lock.cpu_snapshot = self.console.cpu;
             state_lock.is_running = self.running;
             state_lock.is_halting = self.halt;
+            state_lock.cycles_per_second = self.cycles_per_second;
             self.nanos_per_cycle = state_lock.nanos_per_cycle;
+        }
+    }
+
+    fn update_cycle_metrics(&mut self, cycles: u64) {
+        self.cycle_count = self.cycle_count.wrapping_add(cycles);
+        if self.last_second.elapsed() > Duration::from_secs(1) {
+            self.last_second = Instant::now();
+            self.cycles_per_second = self.cycle_count;
+            self.cycle_count = 0;
         }
     }
 

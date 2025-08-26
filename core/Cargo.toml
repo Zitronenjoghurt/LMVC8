@@ -10,6 +10,14 @@ debugger = []
 disassembler = []
 emulator = []
 
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+rpath = true
+
 [dependencies]
 binrw = { workspace = true }
 thiserror = { workspace = true }

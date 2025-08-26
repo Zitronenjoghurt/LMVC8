@@ -10,10 +10,12 @@ pub struct Bus<'a> {
 }
 
 impl<'a> Bus<'a> {
+    #[inline(always)]
     pub fn tick(&mut self) {
         self.step_cycles += 1;
     }
 
+    #[inline(always)]
     pub fn read(&mut self, addr: Address) -> Byte {
         self.tick();
         match u16::from(addr) {
@@ -22,6 +24,7 @@ impl<'a> Bus<'a> {
         }
     }
 
+    #[inline(always)]
     pub fn write(&mut self, addr: Address, value: Byte) {
         self.tick();
         match u16::from(addr) {

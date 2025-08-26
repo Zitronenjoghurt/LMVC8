@@ -9,45 +9,45 @@ use std::ops::Sub;
 pub struct Address(Word);
 
 impl Address {
-    #[inline]
+    #[inline(always)]
     pub fn new(value: Word) -> Self {
         Self(value)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn value(&self) -> Word {
         self.0
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn set_value(&mut self, value: Word) {
         self.0 = value;
     }
 }
 
 impl From<u16> for Address {
-    #[inline]
+    #[inline(always)]
     fn from(value: u16) -> Self {
         Self::new(value.into())
     }
 }
 
 impl From<Address> for u16 {
-    #[inline]
+    #[inline(always)]
     fn from(value: Address) -> Self {
         value.0.into()
     }
 }
 
 impl From<Word> for Address {
-    #[inline]
+    #[inline(always)]
     fn from(value: Word) -> Self {
         Self::new(value)
     }
 }
 
 impl From<Address> for Word {
-    #[inline]
+    #[inline(always)]
     fn from(value: Address) -> Self {
         value.value()
     }
@@ -62,6 +62,7 @@ impl Display for Address {
 impl Sub for Address {
     type Output = Self;
 
+    #[inline(always)]
     fn sub(self, rhs: Self) -> Self::Output {
         self.0.sub_word(rhs.0).0.into()
     }

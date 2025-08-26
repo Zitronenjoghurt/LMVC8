@@ -10,6 +10,7 @@ pub struct ALU {
 }
 
 impl ALU {
+    #[inline(always)]
     pub fn add_bytes(&mut self, a: Byte, b: Byte) -> Byte {
         let (result, carry) = a.add(b);
         self.zero = result.is_zero();
@@ -18,6 +19,7 @@ impl ALU {
         result
     }
 
+    #[inline(always)]
     pub fn add_words(&mut self, a: Word, b: Word) -> Word {
         let (result, carry) = a.add_word(b);
         self.zero = result.is_zero();
@@ -26,6 +28,7 @@ impl ALU {
         result
     }
 
+    #[inline(always)]
     pub fn sub_bytes(&mut self, a: Byte, b: Byte) -> Byte {
         let (result, carry) = a.sub(b);
         self.zero = result.is_zero();
@@ -34,6 +37,7 @@ impl ALU {
         result
     }
 
+    #[inline(always)]
     pub fn sub_words(&mut self, a: Word, b: Word) -> Word {
         let (result, carry) = a.sub_word(b);
         self.zero = result.is_zero();

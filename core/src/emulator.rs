@@ -39,14 +39,16 @@ impl Emulator {
             thread::emulator_thread(console, thread_state, command_receiver, event_sender);
 
             #[cfg(feature = "debugger")]
-            let debugger = crate::debugger::Debugger::new();
-            thread::emulator_thread(
-                console,
-                debugger,
-                thread_state,
-                command_receiver,
-                event_sender,
-            );
+            {
+                let debugger = crate::debugger::Debugger::new();
+                thread::emulator_thread(
+                    console,
+                    debugger,
+                    thread_state,
+                    command_receiver,
+                    event_sender,
+                );
+            }
         });
 
         Emulator {

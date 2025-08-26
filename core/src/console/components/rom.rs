@@ -36,6 +36,7 @@ impl Default for ROM {
 }
 
 impl ROM {
+    #[inline(always)]
     pub fn read(&self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }

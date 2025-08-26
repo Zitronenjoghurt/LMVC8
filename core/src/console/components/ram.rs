@@ -17,14 +17,17 @@ impl Default for RAM {
 }
 
 impl RAM {
+    #[inline(always)]
     pub fn reset(&mut self) {
         self.data = [0; RAM_SIZE];
     }
 
+    #[inline(always)]
     pub fn read(&self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }
 
+    #[inline(always)]
     pub fn write(&mut self, addr: Address, value: Byte) {
         self.data[(u16::from(addr) & 0x7FFF) as usize] = value.into();
     }

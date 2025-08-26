@@ -19,6 +19,7 @@ pub struct GeneralRegisters {
 }
 
 impl GeneralRegisters {
+    #[inline(always)]
     pub fn get_r8(&self, bus: &mut Bus, r8: R8) -> Byte {
         match r8 {
             R8::A => self.a,
@@ -32,6 +33,7 @@ impl GeneralRegisters {
         }
     }
 
+    #[inline(always)]
     pub fn set_r8(&mut self, bus: &mut Bus, r8: R8, byte: Byte) {
         match r8 {
             R8::A => self.a = byte,
@@ -45,6 +47,7 @@ impl GeneralRegisters {
         }
     }
 
+    #[inline(always)]
     pub fn get_r16(&self, r16: R16) -> Word {
         match r16 {
             R16::BC => Word::from_le(self.c, self.b),
@@ -54,6 +57,7 @@ impl GeneralRegisters {
         }
     }
 
+    #[inline(always)]
     pub fn set_r16(&mut self, r16: R16, word: Word) {
         match r16 {
             R16::BC => {
@@ -72,6 +76,7 @@ impl GeneralRegisters {
         }
     }
 
+    #[inline(always)]
     pub fn increment_r16(&mut self, r16: R16) {
         match r16 {
             R16::BC => self.set_r16(R16::BC, self.get_r16(R16::BC).increment().0),

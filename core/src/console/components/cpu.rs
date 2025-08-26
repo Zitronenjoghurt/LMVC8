@@ -32,6 +32,7 @@ impl CPU {
         self.alu = ALU::default();
     }
 
+    #[inline(always)]
     pub fn step(&mut self, bus: &mut Bus) -> bool {
         self.fetch(bus);
 
@@ -40,15 +41,18 @@ impl CPU {
         self.execute(bus, instruction)
     }
 
+    #[inline(always)]
     fn fetch(&mut self, bus: &mut Bus) {
         self.ir = self.read_byte(bus);
     }
 
+    #[inline(always)]
     fn decode(&self, bus: &mut Bus) -> CPUInstruction {
         bus.tick();
         CPUInstruction::from(self.ir.value())
     }
 
+    #[inline(always)]
     fn execute(&mut self, bus: &mut Bus, instruction: CPUInstruction) -> bool {
         bus.tick();
 
@@ -70,12 +74,14 @@ impl CPU {
         do_continue
     }
 
+    #[inline(always)]
     fn read_byte(&mut self, bus: &mut Bus) -> Byte {
         let byte = bus.read(Address::from(self.pc));
         self.pc = self.pc.increment().0;
         byte
     }
 
+    #[inline(always)]
     fn read_word(&mut self, bus: &mut Bus) -> Word {
         let low = self.read_byte(bus);
         let high = self.read_byte(bus);
@@ -85,6 +91,7 @@ impl CPU {
 
 // Instructions
 impl CPU {
+    #[inline(always)]
     fn add_r8(&mut self, bus: &mut Bus, r8: R8) {
         let acc = self.registers.get_r8(bus, R8::ACC);
         let value = self.registers.get_r8(bus, r8);
@@ -92,6 +99,7 @@ impl CPU {
         self.registers.set_r8(bus, R8::ACC, result)
     }
 
+    #[inline(always)]
     fn add_r16(&mut self, r16: R16) {
         let acc = self.registers.get_r16(R16::ACC);
         let value = self.registers.get_r16(r16);
@@ -99,6 +107,7 @@ impl CPU {
         self.registers.set_r16(R16::ACC, result);
     }
 
+    #[inline(always)]
     pub fn sub_r8(&mut self, bus: &mut Bus, r8: R8) {
         let acc = self.registers.get_r8(bus, R8::ACC);
         let value = self.registers.get_r8(bus, r8);
@@ -106,6 +115,7 @@ impl CPU {
         self.registers.set_r8(bus, R8::ACC, result)
     }
 
+    #[inline(always)]
     pub fn sub_r16(&mut self, r16: R16) {
         let acc = self.registers.get_r16(R16::ACC);
         let value = self.registers.get_r16(r16);
@@ -113,21 +123,25 @@ impl CPU {
         self.registers.set_r16(R16::ACC, result);
     }
 
+    #[inline(always)]
     pub fn load_r8(&mut self, bus: &mut Bus, target: R8, source: R8) {
         let value = self.registers.get_r8(bus, source);
         self.registers.set_r8(bus, target, value);
     }
 
+    #[inline(always)]
     pub fn load_r16(&mut self, target: R16, source: R16) {
         let value = self.registers.get_r16(source);
         self.registers.set_r16(target, value);
     }
 
+    #[inline(always)]
     pub fn load_r8i(&mut self, bus: &mut Bus, r8: R8) {
         let value = self.read_byte(bus);
         self.registers.set_r8(bus, r8, value);
     }
 
+    #[inline(always)]
     pub fn load_r16i(&mut self, bus: &mut Bus, r16: R16) {
         let value = self.read_word(bus);
         self.registers.set_r16(r16, value);

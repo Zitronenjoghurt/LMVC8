@@ -10,6 +10,7 @@ pub struct EmulatorState {
     pub nanos_per_cycle: u64,
     #[cfg(feature = "debugger")]
     pub breakpoints: HashSet<Address>,
+    pub cycles_per_second: u64,
 }
 
 impl EmulatorState {

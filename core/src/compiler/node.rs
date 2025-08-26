@@ -20,6 +20,7 @@ impl Node {
 
     pub fn compile(&self, ctx: &mut CompilationContext) {
         match self {
+            #[cfg(feature = "debugger")]
             Self::BreakPoint => {}
             Self::Data(data) => ctx.data.extend(data),
             Self::Instruction(instr) => ctx.data.push(u8::try_from(*instr).unwrap()),
