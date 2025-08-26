@@ -9,8 +9,8 @@ use std::thread::JoinHandle;
 
 pub mod command;
 pub mod event;
-mod state;
-mod thread;
+pub mod state;
+pub mod thread;
 
 pub struct Emulator {
     state: Arc<Mutex<EmulatorState>>,

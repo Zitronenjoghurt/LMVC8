@@ -16,8 +16,7 @@ pub struct DebuggerState {
     pub cpu_snapshot: CPU,
     pub is_running: bool,
     pub is_halting: bool,
-    pub nanos_per_cycle: u64,
-    pub cycles_per_second: u64,
+    pub last_frame_mics: u64,
     pub disassembled_binary: DisassembledBinary,
     pub breakpoints: HashSet<Address>,
 }
@@ -30,8 +29,7 @@ impl Default for DebuggerState {
             cpu_snapshot: CPU::default(),
             is_running: false,
             is_halting: false,
-            nanos_per_cycle: 0,
-            cycles_per_second: 0,
+            last_frame_mics: 0,
             disassembled_binary: DisassembledBinary::default(),
             breakpoints: HashSet::new(),
         }
@@ -44,8 +42,7 @@ impl DebuggerState {
             self.cpu_snapshot = state.cpu_snapshot;
             self.is_running = state.is_running;
             self.is_halting = state.is_halting;
-            self.cycles_per_second = state.cycles_per_second;
-            state.nanos_per_cycle = self.nanos_per_cycle;
+            self.last_frame_mics = state.last_frame_mics;
             self.breakpoints = state.breakpoints.clone();
         });
 
@@ -82,17 +79,17 @@ impl DebuggerState {
         self.emulator.step();
     }
 
-    pub fn format_cycles_per_second(&self) -> String {
-        self.cycles_per_second
-            .to_string()
-            .as_bytes()
-            .rchunks(3)
-            .rev()
-            .map(std::str::from_utf8)
-            .collect::<Result<Vec<&str>, _>>()
-            .unwrap()
-            .join(",")
-    }
+    //pub fn format_cycles_per_frame(&self) -> String {
+    //    self.cycles_per_frame
+    //        .to_string()
+    //        .as_bytes()
+    //        .rchunks(3)
+    //        .rev()
+    //        .map(std::str::from_utf8)
+    //        .collect::<Result<Vec<&str>, _>>()
+    //        .unwrap()
+    //        .join(",")
+    //}
 
     pub fn set_breakpoint(&self, address: u16) {
         self.emulator.set_breakpoint(address.into());

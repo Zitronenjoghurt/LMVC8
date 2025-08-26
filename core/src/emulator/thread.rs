@@ -1,3 +1,4 @@
+use crate::console::step::ConsoleStep;
 use crate::console::Console;
 use crate::emulator::command::{EmulatorCommand, EmulatorCommandReceiver};
 use crate::emulator::event::EmulatorEventSender;
@@ -5,10 +6,12 @@ use crate::emulator::state::EmulatorState;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-const COMMAND_INTERVAL_MS: u64 = 10;
-const UPDATE_INTERVAL_MS: u64 = 16;
+const CYCLES_PER_SECOND: u64 = 600_000_000;
+const FRAMES_PER_SECOND: u64 = 60;
+const FRAME_TIME: Duration = Duration::from_micros(1_000_000 / FRAMES_PER_SECOND);
+const CYCLES_PER_FRAME: u64 = CYCLES_PER_SECOND / FRAMES_PER_SECOND;
 
-struct EmulatorThreadContext {
+pub struct EmulatorThreadContext {
     console: Console,
     #[cfg(feature = "debugger")]
     debugger: crate::debugger::Debugger,
@@ -17,17 +20,12 @@ struct EmulatorThreadContext {
     event_sender: EmulatorEventSender,
     running: bool,
     halt: bool,
-    nanos_per_cycle: u64,
-    cycle_count: u64,
-    cycles_per_second: u64,
-    last_command: Instant,
-    last_second: Instant,
-    last_step: Instant,
-    last_update: Instant,
+    last_frame_mics: u64,
+    frame_start: Instant,
 }
 
 impl EmulatorThreadContext {
-    fn new(
+    pub fn new(
         console: Console,
         #[cfg(feature = "debugger")] debugger: crate::debugger::Debugger,
         state: Arc<Mutex<EmulatorState>>,
@@ -43,33 +41,34 @@ impl EmulatorThreadContext {
             event_sender,
             running: false,
             halt: false,
-            nanos_per_cycle: 0,
-            cycle_count: 0,
-            cycles_per_second: 0,
-            last_command: Instant::now(),
-            last_second: Instant::now(),
-            last_step: Instant::now(),
-            last_update: Instant::now(),
+            last_frame_mics: 0,
+            frame_start: Instant::now(),
         }
     }
 
-    fn run(mut self) {
+    pub fn run(mut self) {
         loop {
-            if self.last_command.elapsed() > Duration::from_millis(COMMAND_INTERVAL_MS) {
-                if let Some(command) = self.command_receiver.poll() {
-                    let shutdown = self.handle_command(command);
-                    if shutdown {
-                        break;
-                    }
+            self.frame_start = Instant::now();
+
+            let _ = if self.running && !self.halt {
+                self.run_frame()
+            } else {
+                0
+            };
+
+            if let Some(command) = self.command_receiver.poll() {
+                let shutdown = self.handle_command(command);
+                if shutdown {
+                    break;
                 }
-                self.last_command = Instant::now();
             }
 
-            if self.running && !self.halt {
-                self.step();
-            } else {
-                std::thread::sleep(Duration::from_millis(10));
-            }
+            self.update_state();
+
+            let elapsed = self.frame_start.elapsed();
+            self.last_frame_mics = elapsed.as_micros() as u64;
+            let sleep_time = FRAME_TIME.saturating_sub(elapsed);
+            std::thread::sleep(sleep_time);
         }
 
         self.event_sender.shutdown(self.console);
@@ -81,49 +80,40 @@ impl EmulatorThreadContext {
         self.update_state();
     }
 
-    fn step(&mut self) {
-        let since_last_step = self.last_step.elapsed();
-        let step = self.console.step();
-        self.update_cycle_metrics(step.cycles);
-        self.update_state();
+    fn run_frame(&mut self) -> u64 {
+        let mut cycles = 0;
 
-        let sleep_duration = Duration::from_nanos(self.nanos_per_cycle * step.cycles)
-            .saturating_sub(since_last_step);
-        if !sleep_duration.is_zero() {
-            std::thread::sleep(sleep_duration);
+        while cycles < CYCLES_PER_FRAME {
+            if self.halt || !self.running {
+                break;
+            }
+
+            let step = self.step();
+            cycles += step.cycles;
         }
 
-        #[cfg(feature = "debugger")]
-        self.debug();
+        cycles
+    }
+
+    fn step(&mut self) -> ConsoleStep {
+        let step = self.console.step();
 
         if !step.do_continue {
             self.halt();
         }
 
-        self.last_step = Instant::now();
+        #[cfg(feature = "debugger")]
+        self.debug();
+
+        step
     }
 
     fn update_state(&mut self) {
-        if (self.last_update.elapsed() < Duration::from_millis(UPDATE_INTERVAL_MS)) {
-            return;
-        }
-
-        self.last_update = Instant::now();
         if let Ok(mut state_lock) = self.state.try_lock() {
             state_lock.cpu_snapshot = self.console.cpu;
             state_lock.is_running = self.running;
             state_lock.is_halting = self.halt;
-            state_lock.cycles_per_second = self.cycles_per_second;
-            self.nanos_per_cycle = state_lock.nanos_per_cycle;
-        }
-    }
-
-    fn update_cycle_metrics(&mut self, cycles: u64) {
-        self.cycle_count = self.cycle_count.wrapping_add(cycles);
-        if self.last_second.elapsed() > Duration::from_secs(1) {
-            self.last_second = Instant::now();
-            self.cycles_per_second = self.cycle_count;
-            self.cycle_count = 0;
+            state_lock.last_frame_mics = self.last_frame_mics;
         }
     }
 

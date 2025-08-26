@@ -47,8 +47,8 @@ impl DebuggerView {
             }
 
             ui.small(format!(
-                "{} Cycles/s",
-                state.debugger.format_cycles_per_second()
+                "{} ms/frame",
+                (state.debugger.last_frame_mics as f32) / 1000.0
             ));
         });
 

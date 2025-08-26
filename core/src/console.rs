@@ -6,7 +6,7 @@ use components::{bus, cpu, ram, rom};
 
 pub mod cartridge;
 pub mod components;
-mod step;
+pub mod step;
 pub mod types;
 
 #[derive(Debug, Default, Clone)]

@@ -21,3 +21,8 @@ rpath = true
 [dependencies]
 binrw = { workspace = true }
 thiserror = { workspace = true }
+
+[[bin]]
+name = "benchmark"
+path = "bin/benchmark.rs"
+required-features = ["emulator"]
