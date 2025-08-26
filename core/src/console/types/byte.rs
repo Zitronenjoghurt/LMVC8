@@ -1,8 +1,7 @@
-use crate::console::types::word::Word;
 use binrw::{BinRead, BinWrite};
 use std::fmt::Display;
 
-#[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
+#[derive(Debug, Default, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, BinWrite, BinRead)]
 #[repr(transparent)]
 pub struct Byte(u8);
 

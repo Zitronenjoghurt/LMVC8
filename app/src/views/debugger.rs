@@ -31,11 +31,20 @@ impl DebuggerView {
 
     fn render_right_panel(&mut self, ui: &mut Ui, state: &mut AppState) {
         ui.horizontal(|ui| {
-            ui.button("▶");
-            ui.button("⏸");
+            if state.debugger.is_running {
+                if ui.button("⏸").clicked() {
+                    state.debugger.pause();
+                }
+            } else if ui.button("▶").clicked() {
+                state.debugger.run();
+            }
+
             if ui.button("↩").clicked() {
                 state.debugger.step();
             };
+            if ui.button("⟲").clicked() {
+                state.debugger.reset();
+            }
         });
 
         ui.separator();
@@ -46,8 +55,10 @@ impl DebuggerView {
 
         ROMDisplay::new(
             &state.debugger.disassembled_binary,
+            &state.debugger.breakpoints,
             state.debugger.cpu_snapshot.get_pc(),
         )
+        .debugger_actions(state.debugger.action_context())
         .ui(ui);
     }
 }

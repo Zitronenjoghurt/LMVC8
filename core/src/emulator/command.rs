@@ -1,4 +1,5 @@
 use crate::console::cartridge::Cartridge;
+use crate::console::types::address::Address;
 use std::sync::mpsc::{Receiver, Sender};
 
 #[derive(Debug)]
@@ -9,6 +10,10 @@ pub enum EmulatorCommand {
     Run,
     Pause,
     Shutdown,
+    #[cfg(feature = "debugger")]
+    SetBreakpoint(Address),
+    #[cfg(feature = "debugger")]
+    RemoveBreakpoint(Address),
 }
 
 impl EmulatorCommand {
@@ -30,6 +35,10 @@ impl EmulatorCommandSender {
         self.0.send(command).ok();
     }
 
+    pub fn pause(&self) {
+        self.send(EmulatorCommand::Pause);
+    }
+
     pub fn run(&self) {
         self.send(EmulatorCommand::Run);
     }
@@ -38,12 +47,26 @@ impl EmulatorCommandSender {
         self.send(EmulatorCommand::Step);
     }
 
+    pub fn reset(&self) {
+        self.send(EmulatorCommand::Reset);
+    }
+
     pub fn shutdown(&self) {
         self.send(EmulatorCommand::Shutdown);
     }
 
     pub fn load(&self, cartridge: Box<Cartridge>) {
         self.send(EmulatorCommand::Load(cartridge));
+    }
+
+    #[cfg(feature = "debugger")]
+    pub fn set_breakpoint(&self, address: Address) {
+        self.send(EmulatorCommand::SetBreakpoint(address));
+    }
+
+    #[cfg(feature = "debugger")]
+    pub fn remove_breakpoint(&self, address: Address) {
+        self.send(EmulatorCommand::RemoveBreakpoint(address));
     }
 }
 

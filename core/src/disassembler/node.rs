@@ -15,6 +15,14 @@ impl Node {
     pub fn instruction(instruction: CPUInstruction) -> Self {
         Self::Instruction(instruction)
     }
+
+    pub fn is_byte(&self) -> bool {
+        matches!(self, Self::Byte(_))
+    }
+
+    pub fn is_instruction(&self) -> bool {
+        matches!(self, Self::Instruction(_))
+    }
 }
 
 impl Display for Node {

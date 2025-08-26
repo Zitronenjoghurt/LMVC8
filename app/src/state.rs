@@ -3,7 +3,7 @@ use crate::state::settings::SettingsState;
 use crate::views::ViewID;
 use serde::{Deserialize, Serialize};
 
-mod debugger;
+pub mod debugger;
 pub mod settings;
 
 #[derive(Default, Serialize, Deserialize)]

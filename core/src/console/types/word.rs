@@ -2,7 +2,7 @@ use crate::console::types::byte::Byte;
 use binrw::{BinRead, BinWrite};
 use std::fmt::Display;
 
-#[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
+#[derive(Debug, Default, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, BinWrite, BinRead)]
 #[brw(little)]
 #[repr(transparent)]
 pub struct Word(u16);

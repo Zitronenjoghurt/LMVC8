@@ -3,7 +3,7 @@ use binrw::{BinRead, BinWrite};
 use std::fmt::{Display, Formatter};
 use std::ops::Sub;
 
-#[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
+#[derive(Debug, Default, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, BinWrite, BinRead)]
 #[brw(little)]
 #[repr(transparent)]
 pub struct Address(Word);

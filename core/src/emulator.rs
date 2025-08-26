@@ -1,5 +1,5 @@
 use crate::console::cartridge::Cartridge;
-use crate::console::components::cpu::CPU;
+use crate::console::types::address::Address;
 use crate::console::Console;
 use crate::emulator::command::{EmulatorCommand, EmulatorCommandSender};
 use crate::emulator::event::{EmulatorEvent, EmulatorEventReceiver};
@@ -32,9 +32,21 @@ impl Emulator {
         let state = Arc::new(Mutex::new(EmulatorState::new()));
 
         let console = Console::new();
+
         let thread_state = state.clone();
         let thread_handle = std::thread::spawn(move || {
+            #[cfg(not(feature = "debugger"))]
             thread::emulator_thread(console, thread_state, command_receiver, event_sender);
+
+            #[cfg(feature = "debugger")]
+            let debugger = crate::debugger::Debugger::new();
+            thread::emulator_thread(
+                console,
+                debugger,
+                thread_state,
+                command_receiver,
+                event_sender,
+            );
         });
 
         Emulator {
@@ -53,17 +65,46 @@ impl Emulator {
         self.command_sender.run();
     }
 
+    pub fn pause(&self) {
+        self.command_sender.pause();
+    }
+
     pub fn step(&self) {
         self.command_sender.step()
+    }
+
+    pub fn reset(&self) {
+        self.command_sender.reset();
     }
 
     pub fn load_cartridge(&self, cartridge: Cartridge) {
         self.command_sender.load(Box::new(cartridge));
     }
 
-    pub fn get_cpu_snapshot(&self) -> Option<CPU> {
+    pub fn with_state<T, F>(&self, f: F) -> Option<T>
+    where
+        F: FnOnce(&EmulatorState) -> T,
+    {
         let state_lock = self.state.try_lock().ok()?;
-        Some(state_lock.cpu_snapshot)
+        Some(f(&state_lock))
+    }
+
+    pub fn with_state_mut<T, F>(&self, f: F) -> Option<T>
+    where
+        F: FnOnce(&mut EmulatorState) -> T,
+    {
+        let mut state_lock = self.state.try_lock().ok()?;
+        Some(f(&mut state_lock))
+    }
+
+    #[cfg(feature = "debugger")]
+    pub fn set_breakpoint(&self, address: Address) {
+        self.command_sender.set_breakpoint(address);
+    }
+
+    #[cfg(feature = "debugger")]
+    pub fn remove_breakpoint(&self, address: Address) {
+        self.command_sender.remove_breakpoint(address);
     }
 }
 
