@@ -17,6 +17,10 @@ impl Default for RAM {
 }
 
 impl RAM {
+    pub fn reset(&mut self) {
+        self.data = [0; RAM_SIZE];
+    }
+
     pub fn read(&self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }

@@ -1,5 +1,6 @@
 use crate::console::types::word::Word;
 use binrw::{BinRead, BinWrite};
+use std::fmt::{Display, Formatter};
 use std::ops::Sub;
 
 #[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
@@ -49,6 +50,12 @@ impl From<Address> for Word {
     #[inline]
     fn from(value: Address) -> Self {
         value.value()
+    }
+}
+
+impl Display for Address {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.0.to_string().fmt(f)
     }
 }
 

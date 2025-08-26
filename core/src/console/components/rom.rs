@@ -1,7 +1,7 @@
+use crate::console::cartridge::Cartridge;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::error::{LMVC8Error, LMVC8Result};
-use std::path::Path;
 
 pub const ROM_SIZE: usize = 0x8000; // 32KiB
 
@@ -22,13 +22,8 @@ impl ROM {
         Ok(Self { data: rom_data })
     }
 
-    pub fn dump_to_file(&self, path: &Path) -> LMVC8Result<()> {
-        Ok(std::fs::write(path, self.data)?)
-    }
-
-    pub fn load_from_file(path: &Path) -> LMVC8Result<Self> {
-        let data = std::fs::read(path)?;
-        Self::new(data)
+    pub fn from_cartridge(cartridge: Cartridge) -> LMVC8Result<Self> {
+        Self::new(cartridge.binary)
     }
 }
 

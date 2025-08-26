@@ -1,6 +1,5 @@
 use crate::compiler::node::Node;
 use crate::console::components::cpu::instructions::CPUInstruction;
-use crate::console::components::rom::ROM;
 
 mod layers;
 mod node;
@@ -15,13 +14,13 @@ pub struct CompilationContext<'a> {
 }
 
 impl Compiler {
-    pub fn compile(self) -> ROM {
+    pub fn compile(self) -> Vec<u8> {
         let mut data = Vec::new();
         let mut context = CompilationContext { data: &mut data };
         self.push_instruction(CPUInstruction::Halt)
             .nodes
             .iter()
             .for_each(|node| node.compile(&mut context));
-        ROM::new(data).unwrap()
+        data
     }
 }

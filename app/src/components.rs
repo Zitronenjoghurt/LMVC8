@@ -1,6 +1,7 @@
 use crate::state::AppState;
 use egui::{Context, Ui};
 
+pub mod cpu_snapshot_display;
 pub mod nav_bar;
 pub mod window_button;
 pub mod window_renderer;

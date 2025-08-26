@@ -1,8 +1,11 @@
+use crate::console::cartridge::Cartridge;
 use std::sync::mpsc::{Receiver, Sender};
 
 #[derive(Debug)]
 pub enum EmulatorCommand {
+    Load(Box<Cartridge>),
     Step,
+    Reset,
     Run,
     Pause,
     Shutdown,
@@ -43,5 +46,9 @@ pub struct EmulatorCommandReceiver(Receiver<EmulatorCommand>);
 impl EmulatorCommandReceiver {
     pub fn poll(&self) -> Option<EmulatorCommand> {
         self.0.try_recv().ok()
+    }
+
+    pub fn poll_timeout(&self, timeout: std::time::Duration) -> Option<EmulatorCommand> {
+        self.0.recv_timeout(timeout).ok()
     }
 }

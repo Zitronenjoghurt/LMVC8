@@ -18,12 +18,19 @@ pub struct Emulator {
     thread_handle: Option<JoinHandle<()>>,
 }
 
+impl Default for Emulator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Emulator {
-    pub fn start(console: Console) -> Self {
+    pub fn new() -> Self {
         let (command_sender, command_receiver) = EmulatorCommand::channel();
         let (event_sender, event_receiver) = EmulatorEvent::channel();
         let state = Arc::new(Mutex::new(EmulatorState::new()));
 
+        let console = Console::new();
         let thread_state = state.clone();
         let thread_handle = std::thread::spawn(move || {
             thread::emulator_thread(console, thread_state, command_receiver, event_sender);
@@ -47,7 +54,7 @@ impl Emulator {
 
     pub fn get_cpu_snapshot(&self) -> Option<CPU> {
         let state_lock = self.state.try_lock().ok()?;
-        Some(state_lock.cpu)
+        Some(state_lock.cpu_snapshot)
     }
 }
 

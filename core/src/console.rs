@@ -1,6 +1,10 @@
+use crate::console::cartridge::Cartridge;
+use crate::console::components::rom::ROM;
 use crate::console::step::ConsoleStep;
+use crate::error::LMVC8Result;
 use components::{bus, cpu, ram, rom};
 
+pub mod cartridge;
 pub mod components;
 mod step;
 pub mod types;
@@ -17,9 +21,15 @@ impl Console {
         Self::default()
     }
 
-    pub fn load_rom(mut self, rom: rom::ROM) -> Self {
-        self.rom = rom;
-        self
+    pub fn reset(&mut self) {
+        self.cpu.reset();
+        self.ram.reset();
+    }
+
+    pub fn load_cartridge(&mut self, cartridge: Cartridge) -> LMVC8Result<()> {
+        self.reset();
+        self.rom = ROM::from_cartridge(cartridge)?;
+        Ok(())
     }
 
     pub fn step(&mut self) -> ConsoleStep {

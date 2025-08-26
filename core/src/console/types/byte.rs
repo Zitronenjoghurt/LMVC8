@@ -1,4 +1,6 @@
+use crate::console::types::word::Word;
 use binrw::{BinRead, BinWrite};
+use std::fmt::Display;
 
 #[derive(Debug, Default, Copy, Clone, BinWrite, BinRead)]
 #[repr(transparent)]
@@ -80,5 +82,12 @@ impl From<Byte> for u16 {
     #[inline]
     fn from(value: Byte) -> Self {
         value.0 as u16
+    }
+}
+
+impl Display for Byte {
+    #[inline]
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "0x{:02X}", self.0)
     }
 }

@@ -2,6 +2,7 @@ use crate::app::LMVC8App;
 
 mod app;
 mod components;
+mod demos;
 mod state;
 mod views;
 mod windows;

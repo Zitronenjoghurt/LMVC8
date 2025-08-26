@@ -24,6 +24,14 @@ pub struct CPU {
 }
 
 impl CPU {
+    pub fn reset(&mut self) {
+        self.registers = GeneralRegisters::default();
+        self.ime = false;
+        self.ir = Byte::default();
+        self.pc = Word::default();
+        self.alu = ALU::default();
+    }
+
     pub fn step(&mut self, bus: &mut Bus) -> bool {
         self.fetch(bus);
 
@@ -123,5 +131,20 @@ impl CPU {
     pub fn load_r16i(&mut self, bus: &mut Bus, r16: R16) {
         let value = self.read_word(bus);
         self.registers.set_r16(r16, value);
+    }
+}
+
+/// Outside access
+impl CPU {
+    pub fn get_pc(&self) -> Word {
+        self.pc
+    }
+
+    pub fn get_ir(&self) -> Byte {
+        self.ir
+    }
+
+    pub fn get_registers(&self) -> GeneralRegisters {
+        self.registers
     }
 }

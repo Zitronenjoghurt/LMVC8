@@ -82,6 +82,41 @@ impl GeneralRegisters {
     }
 }
 
+/// Outside access
+impl GeneralRegisters {
+    pub fn get_a(&self) -> Byte {
+        self.a
+    }
+
+    pub fn get_b(&self) -> Byte {
+        self.b
+    }
+
+    pub fn get_c(&self) -> Byte {
+        self.c
+    }
+
+    pub fn get_d(&self) -> Byte {
+        self.d
+    }
+
+    pub fn get_e(&self) -> Byte {
+        self.e
+    }
+
+    pub fn get_h(&self) -> Byte {
+        self.h
+    }
+
+    pub fn get_l(&self) -> Byte {
+        self.l
+    }
+
+    pub fn get_sp(&self) -> Word {
+        self.sp
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum R8 {

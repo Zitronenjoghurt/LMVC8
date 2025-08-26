@@ -2,7 +2,7 @@ use crate::components::nav_bar::NavBar;
 use crate::components::window_renderer::WindowRenderer;
 use crate::components::ContentComponent;
 use crate::state::AppState;
-use crate::views::View;
+use crate::views::{View, ViewID};
 use crate::windows::settings::SettingsWindow;
 use egui::{CentralPanel, Context, Frame};
 use serde::{Deserialize, Serialize};
@@ -13,7 +13,7 @@ pub struct MainMenuView {
 }
 
 impl MainMenuView {
-    fn render_center(&mut self, ui: &mut egui::Ui, _state: &mut AppState) {
+    fn render_center(&mut self, ui: &mut egui::Ui, state: &mut AppState) {
         ui.vertical_centered_justified(|ui| {
             let available_height = ui.available_height();
             let available_width = ui.available_width();
@@ -32,8 +32,16 @@ impl MainMenuView {
                     ui.label("An emulator for a made-up console");
 
                     ui.separator();
+
+                    if ui.button("Debugger").clicked() {
+                        self.on_debugger_clicked(state);
+                    }
                 })
         });
+    }
+
+    fn on_debugger_clicked(&mut self, state: &mut AppState) {
+        state.switch_view(ViewID::Debugger);
     }
 }
 

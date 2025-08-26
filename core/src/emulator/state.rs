@@ -3,7 +3,7 @@ use crate::console::Console;
 
 #[derive(Debug, Default)]
 pub struct EmulatorState {
-    pub cpu: CPU,
+    pub cpu_snapshot: CPU,
 }
 
 impl EmulatorState {
@@ -12,6 +12,6 @@ impl EmulatorState {
     }
 
     pub fn update(&mut self, console: &Console) {
-        self.cpu = console.cpu;
+        self.cpu_snapshot = console.cpu;
     }
 }

@@ -3,6 +3,7 @@ use crate::emulator::command::{EmulatorCommand, EmulatorCommandReceiver};
 use crate::emulator::event::EmulatorEventSender;
 use crate::emulator::state::EmulatorState;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 pub fn emulator_thread(
     mut console: Console,
@@ -14,8 +15,23 @@ pub fn emulator_thread(
     let mut halt = false;
 
     loop {
-        if let Some(command) = command_receiver.poll() {
+        if halt {
+            break;
+        }
+
+        if let Some(command) = command_receiver.poll_timeout(Duration::from_millis(10)) {
             match command {
+                EmulatorCommand::Load(cartridge) => {
+                    running = false;
+                    match console.load_cartridge(*cartridge) {
+                        Ok(_) => event_sender.cartridge_load_success(),
+                        Err(_) => event_sender.cartridge_load_failed(),
+                    }
+                }
+                EmulatorCommand::Reset => {
+                    running = false;
+                    console.reset();
+                }
                 EmulatorCommand::Run => running = true,
                 EmulatorCommand::Pause => running = false,
                 EmulatorCommand::Shutdown => halt = true,
@@ -29,10 +45,6 @@ pub fn emulator_thread(
 
         if running {
             halt = emulator_step(&mut console, &state);
-        }
-
-        if halt {
-            break;
         }
     }
 

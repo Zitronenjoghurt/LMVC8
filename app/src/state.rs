@@ -1,5 +1,6 @@
 use crate::state::settings::SettingsState;
 use crate::views::ViewID;
+use lmvc8_core::emulator::Emulator;
 use serde::{Deserialize, Serialize};
 
 pub mod settings;
@@ -8,6 +9,8 @@ pub mod settings;
 pub struct AppState {
     current_view: ViewID,
     settings: SettingsState,
+    #[serde(skip)]
+    pub emulator: Emulator,
 }
 
 impl AppState {
