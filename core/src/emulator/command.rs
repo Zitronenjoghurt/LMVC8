@@ -34,8 +34,16 @@ impl EmulatorCommandSender {
         self.send(EmulatorCommand::Run);
     }
 
+    pub fn step(&self) {
+        self.send(EmulatorCommand::Step);
+    }
+
     pub fn shutdown(&self) {
         self.send(EmulatorCommand::Shutdown);
+    }
+
+    pub fn load(&self, cartridge: Box<Cartridge>) {
+        self.send(EmulatorCommand::Load(cartridge));
     }
 }
 
@@ -46,9 +54,5 @@ pub struct EmulatorCommandReceiver(Receiver<EmulatorCommand>);
 impl EmulatorCommandReceiver {
     pub fn poll(&self) -> Option<EmulatorCommand> {
         self.0.try_recv().ok()
-    }
-
-    pub fn poll_timeout(&self, timeout: std::time::Duration) -> Option<EmulatorCommand> {
-        self.0.recv_timeout(timeout).ok()
     }
 }

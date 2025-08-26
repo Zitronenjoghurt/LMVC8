@@ -5,7 +5,7 @@ use std::sync::mpsc::{Receiver, Sender};
 pub enum EmulatorEvent {
     CartridgeLoadFailed,
     CartridgeLoadSuccess,
-    Halted(Box<Console>),
+    Shutdown(Box<Console>),
 }
 
 impl EmulatorEvent {
@@ -24,8 +24,8 @@ impl EmulatorEventSender {
         self.0.send(event).ok();
     }
 
-    pub fn halted(&self, console: Console) {
-        self.send(EmulatorEvent::Halted(Box::new(console)));
+    pub fn shutdown(&self, console: Console) {
+        self.send(EmulatorEvent::Shutdown(Box::new(console)));
     }
 
     pub fn cartridge_load_failed(&self) {

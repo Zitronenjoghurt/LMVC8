@@ -1,10 +1,10 @@
-use crate::components::nav_bar::NavBar;
+use crate::components::window_button::WindowButton;
 use crate::components::window_renderer::WindowRenderer;
-use crate::components::ContentComponent;
+use crate::components::Component;
 use crate::state::AppState;
 use crate::views::{View, ViewID};
 use crate::windows::settings::SettingsWindow;
-use egui::{CentralPanel, Context, Frame};
+use egui::{CentralPanel, Context, Frame, MenuBar, TopBottomPanel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -51,12 +51,20 @@ impl View for MainMenuView {
             .window(&mut self.settings_window)
             .render();
 
-        NavBar::new("main_menu_nav")
-            .label("Main Menu")
-            .hide_home_button()
-            .show_github_button()
-            .settings_window(&mut self.settings_window)
-            .show(ctx, state, |_, _| {});
+        TopBottomPanel::top("main_menu_top_panel").show(ctx, |ui| {
+            MenuBar::new().ui(ui, |ui| {
+                if ui.button("  ").clicked() {
+                    webbrowser::open("https://github.com/Zitronenjoghurt/LMVC8").ok();
+                }
+                ui.separator();
+
+                WindowButton::new(&mut self.settings_window, " 🛠 ").ui(ui);
+                ui.separator();
+
+                ui.label("Main Menu");
+                ui.separator();
+            });
+        });
 
         CentralPanel::default().show(ctx, |ui| {
             self.render_center(ui, state);

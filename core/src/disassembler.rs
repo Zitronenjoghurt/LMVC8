@@ -9,6 +9,16 @@ pub struct Disassembler<'a> {
     nodes: Vec<Node>,
 }
 
+#[derive(Debug, Default)]
+#[repr(transparent)]
+pub struct DisassembledBinary(Vec<Node>);
+
+impl DisassembledBinary {
+    pub fn nodes(&self) -> &[Node] {
+        &self.0
+    }
+}
+
 impl<'a> Disassembler<'a> {
     pub fn new(binary: &'a [u8]) -> Self {
         Self {
@@ -22,7 +32,7 @@ impl<'a> Disassembler<'a> {
         self.offset < self.binary.len()
     }
 
-    pub fn disassemble(mut self) -> Vec<Node> {
+    pub fn disassemble(mut self) -> DisassembledBinary {
         while self.has_data() {
             let value = self.read();
             let instruction = CPUInstruction::from(value);
@@ -36,7 +46,7 @@ impl<'a> Disassembler<'a> {
             }
         }
 
-        self.nodes
+        DisassembledBinary(self.nodes)
     }
 
     fn read(&mut self) -> u8 {

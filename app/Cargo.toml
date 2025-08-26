@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 eframe = { version = "0.32.1", features = ["persistence"] }
 egui = { version = "0.32.1", features = ["persistence"] }
-lmvc8-core = { workspace = true, features = ["compiler", "debugger", "emulator"] }
+egui_extras = "0.32.1"
+lmvc8-core = { workspace = true, features = ["compiler", "debugger", "disassembler", "emulator"] }
 serde = { workspace = true }
 webbrowser = "1.0.5"

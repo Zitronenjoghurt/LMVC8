@@ -20,7 +20,7 @@ impl Node {
 impl Display for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Byte(byte) => write!(f, "{:02X}", byte),
+            Self::Byte(byte) => write!(f, "0x{:02X}", byte),
             Self::Instruction(instruction) => write!(f, "{instruction}"),
         }
     }

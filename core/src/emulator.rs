@@ -1,3 +1,4 @@
+use crate::console::cartridge::Cartridge;
 use crate::console::components::cpu::CPU;
 use crate::console::Console;
 use crate::emulator::command::{EmulatorCommand, EmulatorCommandSender};
@@ -50,6 +51,14 @@ impl Emulator {
 
     pub fn run(&self) {
         self.command_sender.run();
+    }
+
+    pub fn step(&self) {
+        self.command_sender.step()
+    }
+
+    pub fn load_cartridge(&self, cartridge: Cartridge) {
+        self.command_sender.load(Box::new(cartridge));
     }
 
     pub fn get_cpu_snapshot(&self) -> Option<CPU> {
