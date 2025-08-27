@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 
 pub enum DebuggerAction {
+    SetClockSpeed(u64),
     SetBreakpoint(u16),
     RemoveBreakpoint(u16),
 }
@@ -23,6 +24,10 @@ impl DebuggerActionContext {
         } else {
             Vec::new().into_iter()
         }
+    }
+
+    pub fn set_clock_speed(&self, cycles_per_second: u64) {
+        self.push_action(DebuggerAction::SetClockSpeed(cycles_per_second));
     }
 
     pub fn set_breakpoint(&self, addr: u16) {

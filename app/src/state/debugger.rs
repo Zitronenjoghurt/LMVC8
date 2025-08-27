@@ -10,39 +10,29 @@ use std::collections::HashSet;
 
 pub mod action;
 
+#[derive(Default)]
 pub struct DebuggerState {
     emulator: Emulator,
     debugger_action_context: DebuggerActionContext,
     pub cpu_snapshot: CPU,
     pub is_running: bool,
     pub is_halting: bool,
+    pub cycles_per_second: u64,
     pub last_frame_mics: u64,
+    pub last_frame_cycles: u64,
     pub disassembled_binary: DisassembledBinary,
     pub breakpoints: HashSet<Address>,
 }
 
-impl Default for DebuggerState {
-    fn default() -> Self {
-        Self {
-            emulator: Emulator::default(),
-            debugger_action_context: DebuggerActionContext::default(),
-            cpu_snapshot: CPU::default(),
-            is_running: false,
-            is_halting: false,
-            last_frame_mics: 0,
-            disassembled_binary: DisassembledBinary::default(),
-            breakpoints: HashSet::new(),
-        }
-    }
-}
-
 impl DebuggerState {
     pub fn update(&mut self) {
-        self.emulator.with_state_mut(|state| {
+        self.emulator.with_state(|state| {
             self.cpu_snapshot = state.cpu_snapshot;
             self.is_running = state.is_running;
             self.is_halting = state.is_halting;
+            self.cycles_per_second = state.cycles_per_second;
             self.last_frame_mics = state.last_frame_mics;
+            self.last_frame_cycles = state.last_frame_cycles;
             self.breakpoints = state.breakpoints.clone();
         });
 
@@ -79,17 +69,21 @@ impl DebuggerState {
         self.emulator.step();
     }
 
-    //pub fn format_cycles_per_frame(&self) -> String {
-    //    self.cycles_per_frame
-    //        .to_string()
-    //        .as_bytes()
-    //        .rchunks(3)
-    //        .rev()
-    //        .map(std::str::from_utf8)
-    //        .collect::<Result<Vec<&str>, _>>()
-    //        .unwrap()
-    //        .join(",")
-    //}
+    pub fn set_clock_speed(&self, cycles_per_second: u64) {
+        self.emulator.set_clock_speed(cycles_per_second);
+    }
+
+    pub fn format_clock_speed(&self) -> String {
+        if self.cycles_per_second < 1_000 {
+            format!("{} Hz", self.cycles_per_second)
+        } else if self.cycles_per_second < 1_000_000 {
+            format!("{} kHz", self.cycles_per_second / 1_000)
+        } else if self.cycles_per_second < 1_000_000_000 {
+            format!("{} MHz", self.cycles_per_second / 1_000_000)
+        } else {
+            format!("{} GHz", self.cycles_per_second / 1_000_000_000)
+        }
+    }
 
     pub fn set_breakpoint(&self, address: u16) {
         self.emulator.set_breakpoint(address.into());
@@ -119,6 +113,9 @@ impl DebuggerState {
 
     fn handle_action(&mut self, action: DebuggerAction) {
         match action {
+            DebuggerAction::SetClockSpeed(cycles_per_second) => {
+                self.set_clock_speed(cycles_per_second)
+            }
             DebuggerAction::SetBreakpoint(address) => self.set_breakpoint(address),
             DebuggerAction::RemoveBreakpoint(address) => self.remove_breakpoint(address),
         }

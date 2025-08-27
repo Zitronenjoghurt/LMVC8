@@ -6,10 +6,9 @@ use crate::emulator::state::EmulatorState;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-const CYCLES_PER_SECOND: u64 = 600_000_000;
+const DEFAULT_CYCLES_PER_SECOND: u64 = 600_000_000;
 const FRAMES_PER_SECOND: u64 = 60;
 const FRAME_TIME: Duration = Duration::from_micros(1_000_000 / FRAMES_PER_SECOND);
-const CYCLES_PER_FRAME: u64 = CYCLES_PER_SECOND / FRAMES_PER_SECOND;
 
 pub struct EmulatorThreadContext {
     console: Console,
@@ -20,7 +19,9 @@ pub struct EmulatorThreadContext {
     event_sender: EmulatorEventSender,
     running: bool,
     halt: bool,
+    cycles_per_second: u64,
     last_frame_mics: u64,
+    last_frame_cycles: u64,
     frame_start: Instant,
 }
 
@@ -41,7 +42,9 @@ impl EmulatorThreadContext {
             event_sender,
             running: false,
             halt: false,
+            cycles_per_second: DEFAULT_CYCLES_PER_SECOND,
             last_frame_mics: 0,
+            last_frame_cycles: 0,
             frame_start: Instant::now(),
         }
     }
@@ -50,7 +53,7 @@ impl EmulatorThreadContext {
         loop {
             self.frame_start = Instant::now();
 
-            let _ = if self.running && !self.halt {
+            self.last_frame_cycles = if self.running && !self.halt {
                 self.run_frame()
             } else {
                 0
@@ -81,9 +84,10 @@ impl EmulatorThreadContext {
     }
 
     fn run_frame(&mut self) -> u64 {
-        let mut cycles = 0;
+        let cycles_per_frame = self.cycles_per_second / FRAMES_PER_SECOND;
 
-        while cycles < CYCLES_PER_FRAME {
+        let mut cycles = 0;
+        while cycles < cycles_per_frame {
             if self.halt || !self.running {
                 break;
             }
@@ -113,7 +117,9 @@ impl EmulatorThreadContext {
             state_lock.cpu_snapshot = self.console.cpu;
             state_lock.is_running = self.running;
             state_lock.is_halting = self.halt;
+            state_lock.cycles_per_second = self.cycles_per_second;
             state_lock.last_frame_mics = self.last_frame_mics;
+            state_lock.last_frame_cycles = self.last_frame_cycles;
         }
     }
 
@@ -151,6 +157,10 @@ impl EmulatorThreadContext {
                 if !self.running && !self.halt {
                     self.step();
                 }
+            }
+            EmulatorCommand::SetClockSpeed(cycles_per_second) => {
+                self.cycles_per_second = cycles_per_second;
+                self.update_state();
             }
             #[cfg(feature = "debugger")]
             EmulatorCommand::SetBreakpoint(address) => {

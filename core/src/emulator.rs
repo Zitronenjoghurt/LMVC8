@@ -79,6 +79,10 @@ impl Emulator {
         self.command_sender.reset();
     }
 
+    pub fn set_clock_speed(&self, cycles_per_second: u64) {
+        self.command_sender.set_clock_speed(cycles_per_second);
+    }
+
     pub fn load_cartridge(&self, cartridge: Cartridge) {
         self.command_sender.load(Box::new(cartridge));
     }

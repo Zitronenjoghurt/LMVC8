@@ -1,3 +1,4 @@
+use crate::components::clock_speed_edit::ClockSpeedEdit;
 use crate::components::cpu_snapshot_display::CPUSnapshotDisplay;
 use crate::components::rom_display::ROMDisplay;
 use crate::components::window_button::WindowButton;
@@ -27,6 +28,18 @@ impl DebuggerView {
                 })
             });
         });
+
+        ui.separator();
+
+        ui.menu_button("Console", |ui| {
+            ui.menu_button("Clock Speed", |ui| {
+                ClockSpeedEdit::new(
+                    state.debugger.action_context(),
+                    state.debugger.cycles_per_second,
+                )
+                .ui(ui);
+            });
+        });
     }
 
     fn render_right_panel(&mut self, ui: &mut Ui, state: &mut AppState) {
@@ -47,8 +60,9 @@ impl DebuggerView {
             }
 
             ui.small(format!(
-                "{} ms/frame",
-                (state.debugger.last_frame_mics as f32) / 1000.0
+                "{} at {} ms/frame",
+                state.debugger.format_clock_speed(),
+                (state.debugger.last_frame_mics as f32) / 1000.0,
             ));
         });
 

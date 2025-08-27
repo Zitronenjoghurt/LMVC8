@@ -10,6 +10,7 @@ pub enum EmulatorCommand {
     Run,
     Pause,
     Shutdown,
+    SetClockSpeed(u64),
     #[cfg(feature = "debugger")]
     SetBreakpoint(Address),
     #[cfg(feature = "debugger")]
@@ -57,6 +58,10 @@ impl EmulatorCommandSender {
 
     pub fn load(&self, cartridge: Box<Cartridge>) {
         self.send(EmulatorCommand::Load(cartridge));
+    }
+
+    pub fn set_clock_speed(&self, clock_speed: u64) {
+        self.send(EmulatorCommand::SetClockSpeed(clock_speed));
     }
 
     #[cfg(feature = "debugger")]

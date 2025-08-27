@@ -7,7 +7,9 @@ pub struct EmulatorState {
     pub is_halting: bool,
     #[cfg(feature = "debugger")]
     pub breakpoints: std::collections::HashSet<crate::console::types::address::Address>,
+    pub cycles_per_second: u64,
     pub last_frame_mics: u64,
+    pub last_frame_cycles: u64,
 }
 
 impl EmulatorState {
