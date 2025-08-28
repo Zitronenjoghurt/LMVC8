@@ -1690,6 +1690,7 @@ name = "lmvc8-core"
 version = "0.1.0"
 dependencies = [
  "binrw",
+ "bitflags 2.9.3",
  "rstest",
  "thiserror 2.0.16",
 ]

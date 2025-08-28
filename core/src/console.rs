@@ -32,19 +32,19 @@ impl Console {
     }
 
     pub fn step(&mut self) -> ConsoleStep {
-        let do_continue = self.cpu.step(&mut self.bus);
-        let cycles = self.bus.reset_step_cycles();
+        let cpu_step_flags = self.cpu.step(&mut self.bus);
+        let cycles = self.bus.take_step_cycles();
 
         ConsoleStep {
             cycles,
-            do_continue,
+            cpu_step_flags,
         }
     }
 
     pub fn step_till_halt(&mut self) {
         loop {
             let step = self.step();
-            if !step.do_continue {
+            if step.cpu_step_flags.is_halt() {
                 break;
             }
         }

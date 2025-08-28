@@ -20,6 +20,7 @@ rpath = true
 
 [dependencies]
 binrw = { workspace = true }
+bitflags = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

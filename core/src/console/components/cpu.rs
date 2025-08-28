@@ -1,14 +1,18 @@
-use crate::console::components::bus::Bus;
+use crate::console::components::bus::{Bus, ADDR_IA, ADDR_IE};
 use crate::console::components::cpu::alu::ALU;
 use crate::console::components::cpu::instructions::CPUInstruction;
+use crate::console::components::cpu::interrupts::{InterruptFlags, IV_INPUT, IV_TIMER};
 use crate::console::components::cpu::registers::{GeneralRegisters, R16, R8};
+use crate::console::components::cpu::step_flags::CPUStepFlags;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;
 
 pub mod alu;
 pub mod instructions;
+pub mod interrupts;
 pub mod registers;
+pub mod step_flags;
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct CPU {
@@ -33,12 +37,17 @@ impl CPU {
     }
 
     #[inline(always)]
-    pub fn step(&mut self, bus: &mut Bus) -> bool {
+    pub fn step(&mut self, bus: &mut Bus) -> CPUStepFlags {
+        //self.handle_interrupt(bus);
+
         self.fetch(bus);
-
         let instruction = self.decode(bus);
+        let do_halt = self.execute(bus, instruction);
 
-        self.execute(bus, instruction)
+        let mut step_flags = CPUStepFlags::empty();
+        step_flags.set(CPUStepFlags::HALT, do_halt);
+
+        step_flags
     }
 
     #[inline(always)]
@@ -54,13 +63,9 @@ impl CPU {
 
     #[inline(always)]
     fn execute(&mut self, bus: &mut Bus, instruction: CPUInstruction) -> bool {
-        bus.tick();
-
-        let mut do_continue = true;
-
         match instruction {
             CPUInstruction::NoOp => {}
-            CPUInstruction::Halt => do_continue = false,
+            CPUInstruction::Halt => return true,
             CPUInstruction::AddR8(r8) => self.add_r8(bus, r8),
             CPUInstruction::AddR16(r16) => self.add_r16(r16),
             CPUInstruction::SubR8(r8) => self.sub_r8(bus, r8),
@@ -74,8 +79,20 @@ impl CPU {
             CPUInstruction::IncR16(r16) => self.increment_r16(r16),
             CPUInstruction::DecR16(r16) => self.decrement_r16(r16),
         }
+        false
+    }
 
-        do_continue
+    #[inline(always)]
+    fn handle_interrupt(&mut self, bus: &mut Bus) {
+        // ToDo: save return addr on stack
+        let interrupt_flags = self.read_ie(bus) & self.read_ia(bus);
+        if let Some(interrupt) = interrupt_flags.first_set() {
+            match interrupt {
+                InterruptFlags::TIMER => self.pc = IV_TIMER.into(),
+                InterruptFlags::INPUT => self.pc = IV_INPUT.into(),
+                _ => {}
+            }
+        }
     }
 
     #[inline(always)]
@@ -90,6 +107,16 @@ impl CPU {
         let low = self.read_byte(bus);
         let high = self.read_byte(bus);
         Word::from_le(low, high)
+    }
+
+    #[inline(always)]
+    fn read_ie(self, bus: &mut Bus) -> InterruptFlags {
+        bus.read(ADDR_IE.into()).into()
+    }
+
+    #[inline(always)]
+    fn read_ia(self, bus: &mut Bus) -> InterruptFlags {
+        bus.read(ADDR_IA.into()).into()
     }
 }
 

@@ -1,14 +1,21 @@
+use crate::console::components::cpu::interrupts::InterruptFlags;
 use crate::console::components::ram::RAM;
 use crate::console::components::rom::ROM;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 
-pub const ADR_RAM_START: u16 = 0x8000;
+pub const ADDR_RAM_START: u16 = 0x8000;
+pub const ADDR_IA: u16 = 0xFFFE;
+pub const ADDR_IE: u16 = 0xFFFF;
 
 #[derive(Debug, Default, Clone)]
 pub struct Bus {
     pub rom: ROM,
     pub ram: RAM,
+    /// Interrupt enable, memory mapped, but CPU-internal register
+    pub ie: InterruptFlags,
+    /// Interrupt active, memory mapped, but CPU-internal register
+    pub ia: InterruptFlags,
     pub step_cycles: u64,
 }
 
@@ -24,27 +31,41 @@ impl Bus {
     }
 
     #[inline(always)]
-    pub fn reset_step_cycles(&mut self) -> u64 {
+    pub fn take_step_cycles(&mut self) -> u64 {
         let cycles = self.step_cycles;
         self.step_cycles = 0;
         cycles
     }
 
+    #[allow(unreachable_patterns)]
     #[inline(always)]
     pub fn read(&mut self, addr: Address) -> Byte {
-        self.tick();
+        if addr < 0xFFFE.into() {
+            self.tick();
+        }
+
         match u16::from(addr) {
-            0x0..ADR_RAM_START => self.rom.read(addr),
-            ADR_RAM_START..=u16::MAX => self.ram.read(addr - ADR_RAM_START.into()),
+            0x0..ADDR_RAM_START => self.rom.read(addr),
+            ADDR_RAM_START..=0xFFFD => self.ram.read(addr - ADDR_RAM_START.into()),
+            ADDR_IA => self.ia.into(),
+            ADDR_IE => self.ie.into(),
+            _ => unreachable!(),
         }
     }
 
+    #[allow(unreachable_patterns)]
     #[inline(always)]
     pub fn write(&mut self, addr: Address, value: Byte) {
-        self.tick();
+        if addr < 0xFFFE.into() {
+            self.tick();
+        }
+
         match u16::from(addr) {
-            0x0..ADR_RAM_START => {}
-            ADR_RAM_START..=u16::MAX => self.ram.write(addr - ADR_RAM_START.into(), value),
+            0x0..ADDR_RAM_START => {}
+            ADDR_RAM_START..=0xFFFD => self.ram.write(addr - ADDR_RAM_START.into(), value),
+            ADDR_IA => self.ia = value.into(),
+            ADDR_IE => self.ie = value.into(),
+            _ => unreachable!(),
         }
     }
 }

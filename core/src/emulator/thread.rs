@@ -6,7 +6,7 @@ use crate::emulator::state::EmulatorState;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-const DEFAULT_CYCLES_PER_SECOND: u64 = 600_000_000;
+const DEFAULT_CYCLES_PER_SECOND: u64 = 400_000_000;
 const FRAMES_PER_SECOND: u64 = 60;
 const FRAME_TIME: Duration = Duration::from_micros(1_000_000 / FRAMES_PER_SECOND);
 
@@ -22,6 +22,7 @@ pub struct EmulatorThreadContext {
     cycles_per_second: u64,
     last_frame_mics: u64,
     last_frame_cycles: u64,
+    last_frame_steps: u64,
     frame_start: Instant,
 }
 
@@ -45,6 +46,7 @@ impl EmulatorThreadContext {
             cycles_per_second: DEFAULT_CYCLES_PER_SECOND,
             last_frame_mics: 0,
             last_frame_cycles: 0,
+            last_frame_steps: 0,
             frame_start: Instant::now(),
         }
     }
@@ -53,10 +55,10 @@ impl EmulatorThreadContext {
         loop {
             self.frame_start = Instant::now();
 
-            self.last_frame_cycles = if self.running && !self.halt {
+            (self.last_frame_cycles, self.last_frame_steps) = if self.running && !self.halt {
                 self.run_frame()
             } else {
-                0
+                (0, 0)
             };
 
             if let Some(command) = self.command_receiver.poll() {
@@ -83,10 +85,11 @@ impl EmulatorThreadContext {
         self.update_state();
     }
 
-    fn run_frame(&mut self) -> u64 {
+    fn run_frame(&mut self) -> (u64, u64) {
         let cycles_per_frame = self.cycles_per_second / FRAMES_PER_SECOND;
 
         let mut cycles = 0;
+        let mut steps = 0;
         while cycles < cycles_per_frame {
             if self.halt || !self.running {
                 break;
@@ -94,22 +97,23 @@ impl EmulatorThreadContext {
 
             let step = self.step();
             cycles += step.cycles;
+            steps += 1;
         }
 
-        cycles
+        (cycles, steps)
     }
 
     fn step(&mut self) -> ConsoleStep {
-        let step = self.console.step();
+        let console_step = self.console.step();
 
-        if !step.do_continue {
+        if console_step.cpu_step_flags.is_halt() {
             self.halt();
         }
 
         #[cfg(feature = "debugger")]
         self.debug();
 
-        step
+        console_step
     }
 
     fn update_state(&mut self) {

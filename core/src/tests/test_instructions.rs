@@ -1,4 +1,4 @@
-use crate::console::components::bus::ADR_RAM_START;
+use crate::console::components::bus::ADDR_RAM_START;
 use crate::console::components::cpu::registers::{R16, R8};
 use crate::console::types::byte::Byte;
 use crate::console::Console;
@@ -120,7 +120,7 @@ fn test_load_r8(#[case] opcode: u8, #[case] r8_1: R8, #[case] r8_2: R8) {
     const VALUE_2: u8 = 0x23;
 
     let mut console = Console::builder()
-        .r16(R16::HL, ADR_RAM_START)
+        .r16(R16::HL, ADDR_RAM_START)
         .r8(r8_1, VALUE_1)
         .r8(r8_2, VALUE_2)
         .rom(opcode)
@@ -151,8 +151,8 @@ fn test_load_r8(#[case] opcode: u8, #[case] r8_1: R8, #[case] r8_2: R8) {
 #[rstest]
 #[case::ldr8_h_hl(OP_LDR8_H_HL, 0x71, R8::H, 0x71)]
 #[case::ldr8_l_hl(OP_LDR8_L_HL, 0x71, R8::L, 0x71)]
-#[case::ldr8_hl_h(OP_LDR8_HL_H, 0x71, R8::HL, (ADR_RAM_START >> 8) as u8)]
-#[case::ldr8_hl_l(OP_LDR8_HL_L, 0x71, R8::HL, ADR_RAM_START as u8)]
+#[case::ldr8_hl_h(OP_LDR8_HL_H, 0x71, R8::HL, (ADDR_RAM_START >> 8) as u8)]
+#[case::ldr8_hl_l(OP_LDR8_HL_L, 0x71, R8::HL, ADDR_RAM_START as u8)]
 fn test_load_r8_h_l_hl(
     #[case] opcode: u8,
     #[case] value_hl: u8,
@@ -160,7 +160,7 @@ fn test_load_r8_h_l_hl(
     #[case] expected: u8,
 ) {
     let mut console = Console::builder()
-        .r16(R16::HL, ADR_RAM_START)
+        .r16(R16::HL, ADDR_RAM_START)
         .r8(R8::HL, value_hl)
         .rom(opcode)
         .rom(OP_HALT)
