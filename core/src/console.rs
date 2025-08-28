@@ -2,7 +2,7 @@ use crate::console::cartridge::Cartridge;
 use crate::console::components::rom::ROM;
 use crate::console::step::ConsoleStep;
 use crate::error::LMVC8Result;
-use components::{bus, cpu, ram, rom};
+use components::{bus, cpu};
 
 pub mod cartridge;
 pub mod components;
@@ -12,8 +12,7 @@ pub mod types;
 #[derive(Debug, Default, Clone)]
 pub struct Console {
     pub cpu: cpu::CPU,
-    pub rom: rom::ROM,
-    pub ram: ram::RAM,
+    pub bus: bus::Bus,
 }
 
 impl Console {
@@ -23,27 +22,31 @@ impl Console {
 
     pub fn reset(&mut self) {
         self.cpu.reset();
-        self.ram.reset();
+        self.bus.reset();
     }
 
     pub fn load_cartridge(&mut self, cartridge: Cartridge) -> LMVC8Result<()> {
         self.reset();
-        self.rom = ROM::from_cartridge(cartridge)?;
+        self.bus.rom = ROM::from_cartridge(cartridge)?;
         Ok(())
     }
 
     pub fn step(&mut self) -> ConsoleStep {
-        let mut bus = bus::Bus {
-            rom: &mut self.rom,
-            ram: &mut self.ram,
-            step_cycles: 0,
-        };
-
-        let do_continue = self.cpu.step(&mut bus);
+        let do_continue = self.cpu.step(&mut self.bus);
+        let cycles = self.bus.reset_step_cycles();
 
         ConsoleStep {
-            cycles: bus.step_cycles,
+            cycles,
             do_continue,
+        }
+    }
+
+    pub fn step_till_halt(&mut self) {
+        loop {
+            let step = self.step();
+            if !step.do_continue {
+                break;
+            }
         }
     }
 }

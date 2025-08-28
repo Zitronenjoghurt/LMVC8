@@ -7,7 +7,7 @@ pub const ROM_SIZE: usize = 0x8000; // 32KiB
 
 #[derive(Debug, Clone)]
 pub struct ROM {
-    data: [u8; ROM_SIZE],
+    pub data: [u8; ROM_SIZE],
 }
 
 impl ROM {

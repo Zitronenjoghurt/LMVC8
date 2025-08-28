@@ -56,4 +56,24 @@ impl Compiler {
         self.push_instruction(CPUInstruction::LoadR16i(r16))
             .push_word(immediate)
     }
+
+    /// Increment the specified register
+    pub fn increment_r8(self, r8: R8) -> Self {
+        self.push_instruction(CPUInstruction::IncR8(r8))
+    }
+
+    /// Decrement the specified register
+    pub fn decrement_r8(self, r8: R8) -> Self {
+        self.push_instruction(CPUInstruction::DecR8(r8))
+    }
+
+    /// Increment the specified register
+    pub fn increment_r16(self, r16: R16) -> Self {
+        self.push_instruction(CPUInstruction::IncR16(r16))
+    }
+
+    /// Decrement the specified register
+    pub fn decrement_r16(self, r16: R16) -> Self {
+        self.push_instruction(CPUInstruction::DecR16(r16))
+    }
 }

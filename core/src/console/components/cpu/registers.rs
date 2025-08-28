@@ -48,6 +48,18 @@ impl GeneralRegisters {
     }
 
     #[inline(always)]
+    pub fn increment_r8(&mut self, bus: &mut Bus, r8: R8) {
+        let before_value = self.get_r8(bus, r8);
+        self.set_r8(bus, r8, before_value.increment().0);
+    }
+
+    #[inline(always)]
+    pub fn decrement_r8(&mut self, bus: &mut Bus, r8: R8) {
+        let before_value = self.get_r8(bus, r8);
+        self.set_r8(bus, r8, before_value.decrement().0);
+    }
+
+    #[inline(always)]
     pub fn get_r16(&self, r16: R16) -> Word {
         match r16 {
             R16::BC => Word::from_le(self.c, self.b),
@@ -78,12 +90,12 @@ impl GeneralRegisters {
 
     #[inline(always)]
     pub fn increment_r16(&mut self, r16: R16) {
-        match r16 {
-            R16::BC => self.set_r16(R16::BC, self.get_r16(R16::BC).increment().0),
-            R16::DE => self.set_r16(R16::DE, self.get_r16(R16::DE).increment().0),
-            R16::HL => self.set_r16(R16::HL, self.get_r16(R16::HL).increment().0),
-            R16::SP => self.sp = self.sp.increment().0,
-        }
+        self.set_r16(r16, self.get_r16(r16).increment().0);
+    }
+
+    #[inline(always)]
+    pub fn decrement_r16(&mut self, r16: R16) {
+        self.set_r16(r16, self.get_r16(r16).decrement().0);
     }
 }
 
@@ -122,7 +134,7 @@ impl GeneralRegisters {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum R8 {
     A = 0,
@@ -136,7 +148,8 @@ pub enum R8 {
 }
 
 impl R8 {
-    pub const ACC: Self = Self::A;
+    pub const ACC: R8 = R8::A;
+    pub const ALL: [R8; 8] = [R8::A, R8::B, R8::C, R8::D, R8::E, R8::H, R8::L, R8::HL];
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -149,7 +162,8 @@ pub enum R16 {
 }
 
 impl R16 {
-    pub const ACC: Self = Self::BC;
+    pub const ACC: R16 = R16::BC;
+    pub const ALL: [R16; 4] = [R16::BC, R16::DE, R16::HL, R16::SP];
 }
 
 impl From<u8> for R8 {

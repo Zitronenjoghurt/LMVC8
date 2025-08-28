@@ -1,4 +1,5 @@
 use lmvc8_core::console::Console;
+use lmvc8_core::debugger::Debugger;
 use lmvc8_core::emulator::command::EmulatorCommand;
 use lmvc8_core::emulator::event::EmulatorEvent;
 use lmvc8_core::emulator::state::EmulatorState;
@@ -18,7 +19,16 @@ fn main() {
         command_sender.shutdown();
     });
 
+    #[cfg(feature = "debugger")]
+    let debugger = Debugger::default();
+
+    #[cfg(feature = "debugger")]
+    let thread_context =
+        EmulatorThreadContext::new(console, debugger, state, command_receiver, event_sender);
+
+    #[cfg(not(feature = "debugger"))]
     let thread_context = EmulatorThreadContext::new(console, state, command_receiver, event_sender);
+
     thread_context.run();
     handle.join().unwrap();
 }

@@ -22,6 +22,9 @@ rpath = true
 binrw = { workspace = true }
 thiserror = { workspace = true }
 
+[dev-dependencies]
+rstest = "0.26.1"
+
 [[bin]]
 name = "benchmark"
 path = "bin/benchmark.rs"

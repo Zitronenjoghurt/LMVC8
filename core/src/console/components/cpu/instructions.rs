@@ -14,6 +14,10 @@ pub enum CPUInstruction {
     LoadR16((R16, R16)),
     LoadR8i(R8),
     LoadR16i(R16),
+    IncR8(R8),
+    IncR16(R16),
+    DecR8(R8),
+    DecR16(R16),
 }
 
 impl CPUInstruction {
@@ -26,7 +30,11 @@ impl CPUInstruction {
             | Self::SubR8(_)
             | Self::SubR16(_)
             | Self::LoadR8(_)
-            | Self::LoadR16(_) => 1,
+            | Self::LoadR16(_)
+            | Self::IncR8(_)
+            | Self::IncR16(_)
+            | Self::DecR8(_)
+            | Self::DecR16(_) => 1,
             Self::LoadR8i(_) => 2,
             Self::LoadR16i(_) => 3,
         }
@@ -142,6 +150,30 @@ impl From<u8> for CPUInstruction {
             0x6D => CPUInstruction::LoadR8i(R8::H),
             0x6E => CPUInstruction::LoadR8i(R8::L),
             0x6F => CPUInstruction::LoadR8i(R8::HL),
+            0x70 => CPUInstruction::IncR16(R16::BC),
+            0x71 => CPUInstruction::IncR16(R16::DE),
+            0x72 => CPUInstruction::IncR16(R16::HL),
+            0x73 => CPUInstruction::IncR16(R16::SP),
+            0x74 => CPUInstruction::DecR16(R16::BC),
+            0x75 => CPUInstruction::DecR16(R16::DE),
+            0x76 => CPUInstruction::DecR16(R16::HL),
+            0x77 => CPUInstruction::DecR16(R16::SP),
+            0x78 => CPUInstruction::IncR8(R8::A),
+            0x79 => CPUInstruction::IncR8(R8::B),
+            0x7A => CPUInstruction::IncR8(R8::C),
+            0x7B => CPUInstruction::IncR8(R8::D),
+            0x7C => CPUInstruction::IncR8(R8::E),
+            0x7D => CPUInstruction::IncR8(R8::H),
+            0x7E => CPUInstruction::IncR8(R8::L),
+            0x7F => CPUInstruction::IncR8(R8::HL),
+            0x88 => CPUInstruction::DecR8(R8::A),
+            0x89 => CPUInstruction::DecR8(R8::B),
+            0x8A => CPUInstruction::DecR8(R8::C),
+            0x8B => CPUInstruction::DecR8(R8::D),
+            0x8C => CPUInstruction::DecR8(R8::E),
+            0x8D => CPUInstruction::DecR8(R8::H),
+            0x8E => CPUInstruction::DecR8(R8::L),
+            0x8F => CPUInstruction::DecR8(R8::HL),
             _ => CPUInstruction::NoOp,
         }
     }
@@ -276,6 +308,38 @@ impl TryFrom<CPUInstruction> for u8 {
                 R8::L => 0x6E,
                 R8::HL => 0x6F,
             },
+            CPUInstruction::IncR16(r16) => match r16 {
+                R16::BC => 0x70,
+                R16::DE => 0x71,
+                R16::HL => 0x72,
+                R16::SP => 0x73,
+            },
+            CPUInstruction::DecR16(r16) => match r16 {
+                R16::BC => 0x74,
+                R16::DE => 0x75,
+                R16::HL => 0x76,
+                R16::SP => 0x77,
+            },
+            CPUInstruction::IncR8(r8) => match r8 {
+                R8::A => 0x78,
+                R8::B => 0x79,
+                R8::C => 0x7A,
+                R8::D => 0x7B,
+                R8::E => 0x7C,
+                R8::H => 0x7D,
+                R8::L => 0x7E,
+                R8::HL => 0x7F,
+            },
+            CPUInstruction::DecR8(r8) => match r8 {
+                R8::A => 0x88,
+                R8::B => 0x89,
+                R8::C => 0x8A,
+                R8::D => 0x8B,
+                R8::E => 0x8C,
+                R8::H => 0x8D,
+                R8::L => 0x8E,
+                R8::HL => 0x8F,
+            },
         };
 
         Ok(value)
@@ -295,6 +359,10 @@ impl Display for CPUInstruction {
             Self::LoadR16((r1, r2)) => write!(f, "LD {r1}, {r2}"),
             Self::LoadR8i(r8) => write!(f, "LD {r8}, n"),
             Self::LoadR16i(r16) => write!(f, "LD {r16}, nn"),
+            Self::IncR8(r8) => write!(f, "INC {r8}"),
+            Self::IncR16(r16) => write!(f, "INC {r16}"),
+            Self::DecR8(r8) => write!(f, "DEC {r8}"),
+            Self::DecR16(r16) => write!(f, "DEC {r16}"),
         }
     }
 }

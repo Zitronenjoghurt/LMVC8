@@ -69,6 +69,10 @@ impl CPU {
             CPUInstruction::LoadR16((target, source)) => self.load_r16(target, source),
             CPUInstruction::LoadR8i(r8) => self.load_r8i(bus, r8),
             CPUInstruction::LoadR16i(r16) => self.load_r16i(bus, r16),
+            CPUInstruction::IncR8(r8) => self.increment_r8(bus, r8),
+            CPUInstruction::DecR8(r8) => self.decrement_r8(bus, r8),
+            CPUInstruction::IncR16(r16) => self.increment_r16(r16),
+            CPUInstruction::DecR16(r16) => self.decrement_r16(r16),
         }
 
         do_continue
@@ -146,6 +150,26 @@ impl CPU {
         let value = self.read_word(bus);
         self.registers.set_r16(r16, value);
     }
+
+    #[inline(always)]
+    pub fn increment_r8(&mut self, bus: &mut Bus, r8: R8) {
+        self.registers.increment_r8(bus, r8);
+    }
+
+    #[inline(always)]
+    pub fn decrement_r8(&mut self, bus: &mut Bus, r8: R8) {
+        self.registers.decrement_r8(bus, r8);
+    }
+
+    #[inline(always)]
+    pub fn increment_r16(&mut self, r16: R16) {
+        self.registers.increment_r16(r16);
+    }
+
+    #[inline(always)]
+    pub fn decrement_r16(&mut self, r16: R16) {
+        self.registers.decrement_r16(r16);
+    }
 }
 
 /// Outside access
@@ -160,5 +184,19 @@ impl CPU {
 
     pub fn get_registers(&self) -> GeneralRegisters {
         self.registers
+    }
+
+    pub fn get_alu(&self) -> ALU {
+        self.alu
+    }
+}
+
+impl CPU {
+    pub fn set_r8(&mut self, bus: &mut Bus, r8: R8, value: u8) {
+        self.registers.set_r8(bus, r8, value.into());
+    }
+
+    pub fn set_r16(&mut self, r16: R16, value: u16) {
+        self.registers.set_r16(r16, value.into())
     }
 }

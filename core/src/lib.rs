@@ -8,3 +8,5 @@ pub mod disassembler;
 #[cfg(feature = "emulator")]
 pub mod emulator;
 pub mod error;
+#[cfg(test)]
+mod tests;
