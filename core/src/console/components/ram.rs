@@ -5,7 +5,7 @@ pub const RAM_SIZE: usize = 0x8000; // 32KiB
 
 #[derive(Debug, Clone)]
 pub struct RAM {
-    data: [u8; RAM_SIZE],
+    pub data: [u8; RAM_SIZE],
 }
 
 impl Default for RAM {

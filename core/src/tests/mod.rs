@@ -22,6 +22,11 @@ impl ConsoleBuilder {
         self
     }
 
+    pub fn write(mut self, address: u16, value: u8) -> Self {
+        self.console.bus.write(address.into(), value.into());
+        self
+    }
+
     pub fn r8(mut self, r8: R8, value: u8) -> Self {
         self.console.cpu.set_r8(&mut self.console.bus, r8, value);
         self

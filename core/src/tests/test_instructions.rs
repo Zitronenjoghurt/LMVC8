@@ -1,6 +1,8 @@
-use crate::console::components::bus::ADDR_RAM_START;
-use crate::console::components::cpu::registers::{R16, R8};
+use crate::console::components::bus::{ADDR_RAM_START, ADDR_SAFE_SP_START};
+use crate::console::components::cpu::registers::{R16, R16S, R8};
+use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
+use crate::console::types::word::Word;
 use crate::console::Console;
 use rstest::rstest;
 
@@ -61,6 +63,14 @@ const OP_LDR8_HL_D: u8 = 0x54;
 const OP_LDR8_HL_E: u8 = 0x55;
 const OP_LDR8_HL_H: u8 = 0x56;
 const OP_LDR8_HL_L: u8 = 0x57;
+const OP_PUSH_AF: u8 = 0x80;
+const OP_PUSH_BC: u8 = 0x81;
+const OP_PUSH_DE: u8 = 0x82;
+const OP_PUSH_HL: u8 = 0x83;
+const OP_POP_AF: u8 = 0x84;
+const OP_POP_BC: u8 = 0x85;
+const OP_POP_DE: u8 = 0x86;
+const OP_POP_HL: u8 = 0x87;
 
 #[rstest]
 #[case::ldr8_a_b(OP_LDR8_A_B, R8::A, R8::B)]
@@ -175,4 +185,82 @@ fn test_load_r8_h_l_hl(
             .get_r8(&mut console.bus, r8_test),
         Byte::new(expected)
     );
+}
+
+#[rstest]
+#[case::push_af(OP_PUSH_AF, R16S::AF)]
+#[case::push_bc(OP_PUSH_BC, R16S::BC)]
+#[case::push_de(OP_PUSH_DE, R16S::DE)]
+#[case::push_hl(OP_PUSH_HL, R16S::HL)]
+fn test_push(#[case] opcode: u8, #[case] register: R16S) {
+    const VALUE: u16 = 0x1234;
+
+    let mut console = Console::builder()
+        .r16(R16::SP, ADDR_SAFE_SP_START)
+        .r16(R16::BC, VALUE)
+        .r16(R16::DE, VALUE)
+        .r16(R16::HL, VALUE)
+        .r8(R8::A, (VALUE >> 8) as u8)
+        .rom(opcode)
+        .rom(OP_HALT)
+        .build();
+
+    console.step_till_halt();
+
+    assert_eq!(
+        console.bus.read(Address::from(ADDR_SAFE_SP_START)),
+        Byte::new((VALUE >> 8) as u8)
+    );
+
+    if register != R16S::AF {
+        assert_eq!(
+            console.bus.read(Address::from(ADDR_SAFE_SP_START - 1)),
+            Byte::new(VALUE as u8)
+        );
+    }
+}
+
+#[rstest]
+#[case::pop_af(OP_POP_AF, R16S::AF)]
+#[case::pop_bc(OP_POP_BC, R16S::BC)]
+#[case::pop_de(OP_POP_DE, R16S::DE)]
+#[case::pop_hl(OP_POP_HL, R16S::HL)]
+fn test_op(#[case] opcode: u8, #[case] register: R16S) {
+    let mut console = Console::builder()
+        .r16(R16::SP, ADDR_SAFE_SP_START - 1)
+        .write(ADDR_SAFE_SP_START, 0x75)
+        .write(ADDR_SAFE_SP_START - 1, 0x01)
+        .rom(opcode)
+        .rom(OP_HALT)
+        .build();
+
+    console.step_till_halt();
+
+    match register {
+        R16S::AF => {
+            assert_eq!(
+                console.cpu.get_registers().get_r8(&mut console.bus, R8::A),
+                Byte::new(0x75)
+            );
+            assert_eq!(console.cpu.get_alu().get_flags().bits(), 0x01)
+        }
+        R16S::BC => {
+            assert_eq!(
+                console.cpu.get_registers().get_r16(R16::BC),
+                Word::new(0x7501)
+            );
+        }
+        R16S::DE => {
+            assert_eq!(
+                console.cpu.get_registers().get_r16(R16::DE),
+                Word::new(0x7501)
+            );
+        }
+        R16S::HL => {
+            assert_eq!(
+                console.cpu.get_registers().get_r16(R16::HL),
+                Word::new(0x7501)
+            );
+        }
+    }
 }

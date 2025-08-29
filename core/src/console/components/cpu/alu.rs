@@ -10,6 +10,16 @@ pub struct ALU {
 
 impl ALU {
     #[inline(always)]
+    pub fn get_flags(&self) -> ALUFlags {
+        self.flags
+    }
+
+    #[inline(always)]
+    pub fn get_flags_mut(&mut self) -> &mut ALUFlags {
+        &mut self.flags
+    }
+
+    #[inline(always)]
     pub fn add_bytes(&mut self, a: Byte, b: Byte) -> Byte {
         let (result, carry) = a.add(b);
         let overflow = self.byte_add_overflow(a, b, result);
@@ -86,6 +96,11 @@ bitflags! {
 }
 
 impl ALUFlags {
+    #[inline(always)]
+    pub fn set_bits(&mut self, value: u8) {
+        *self = Self::from_bits_truncate(value);
+    }
+
     #[inline(always)]
     pub fn is_zero(&self) -> bool {
         self.contains(ALUFlags::ZERO)

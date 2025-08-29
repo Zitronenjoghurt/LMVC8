@@ -5,6 +5,7 @@ use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 
 pub const ADDR_RAM_START: u16 = 0x8000;
+pub const ADDR_SAFE_SP_START: u16 = 0xFFFD;
 pub const ADDR_IA: u16 = 0xFFFE;
 pub const ADDR_IE: u16 = 0xFFFF;
 

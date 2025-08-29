@@ -2,7 +2,7 @@ use crate::console::components::bus::{Bus, ADDR_IA, ADDR_IE};
 use crate::console::components::cpu::alu::ALU;
 use crate::console::components::cpu::instructions::CPUInstruction;
 use crate::console::components::cpu::interrupts::{InterruptFlags, IV_INPUT, IV_TIMER};
-use crate::console::components::cpu::registers::{GeneralRegisters, R16, R8};
+use crate::console::components::cpu::registers::{GeneralRegisters, R16, R16S, R8};
 use crate::console::components::cpu::step_flags::CPUStepFlags;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
@@ -38,7 +38,7 @@ impl CPU {
 
     #[inline(always)]
     pub fn step(&mut self, bus: &mut Bus) -> CPUStepFlags {
-        //self.handle_interrupt(bus);
+        self.handle_interrupt(bus);
 
         self.fetch(bus);
         let instruction = self.decode(bus);
@@ -78,6 +78,8 @@ impl CPU {
             CPUInstruction::DecR8(r8) => self.decrement_r8(bus, r8),
             CPUInstruction::IncR16(r16) => self.increment_r16(r16),
             CPUInstruction::DecR16(r16) => self.decrement_r16(r16),
+            CPUInstruction::Push(r16s) => self.push(bus, r16s),
+            CPUInstruction::Pop(r16s) => self.pop(bus, r16s),
         }
         false
     }
@@ -106,6 +108,32 @@ impl CPU {
     fn read_word(&mut self, bus: &mut Bus) -> Word {
         let low = self.read_byte(bus);
         let high = self.read_byte(bus);
+        Word::from_le(low, high)
+    }
+
+    #[inline(always)]
+    fn push_byte(&mut self, bus: &mut Bus, byte: Byte) {
+        bus.write(Address::from(self.registers.get_r16(R16::SP)), byte);
+        self.registers.decrement_r16(R16::SP);
+    }
+
+    #[inline(always)]
+    fn push_word(&mut self, bus: &mut Bus, word: Word) {
+        self.push_byte(bus, word.high_byte());
+        self.push_byte(bus, word.low_byte());
+    }
+
+    #[inline(always)]
+    fn pop_byte(&mut self, bus: &mut Bus) -> Byte {
+        let byte = bus.read(Address::from(self.registers.get_r16(R16::SP)));
+        self.registers.increment_r16(R16::SP);
+        byte
+    }
+
+    #[inline(always)]
+    fn pop_word(&mut self, bus: &mut Bus) -> Word {
+        let low = self.pop_byte(bus);
+        let high = self.pop_byte(bus);
         Word::from_le(low, high)
     }
 
@@ -196,6 +224,19 @@ impl CPU {
     #[inline(always)]
     pub fn decrement_r16(&mut self, r16: R16) {
         self.registers.decrement_r16(r16);
+    }
+
+    #[inline(always)]
+    pub fn push(&mut self, bus: &mut Bus, r16s: R16S) {
+        let value = self.registers.get_r16s(r16s, self.alu.get_flags());
+        self.push_word(bus, value);
+    }
+
+    #[inline(always)]
+    pub fn pop(&mut self, bus: &mut Bus, r16s: R16S) {
+        let value = self.pop_word(bus);
+        self.registers
+            .set_r16s(r16s, self.alu.get_flags_mut(), value);
     }
 }
 

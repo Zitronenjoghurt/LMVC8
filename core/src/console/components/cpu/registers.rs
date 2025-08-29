@@ -1,4 +1,5 @@
 use crate::console::components::bus::Bus;
+use crate::console::components::cpu::alu::ALUFlags;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::console::types::word::Word;
@@ -97,6 +98,38 @@ impl GeneralRegisters {
     pub fn decrement_r16(&mut self, r16: R16) {
         self.set_r16(r16, self.get_r16(r16).decrement().0);
     }
+
+    #[inline(always)]
+    pub fn get_r16s(&self, r16s: R16S, flags: ALUFlags) -> Word {
+        match r16s {
+            R16S::AF => Word::from_le(Byte::new(flags.bits()), self.a),
+            R16S::BC => Word::from_le(self.c, self.b),
+            R16S::DE => Word::from_le(self.e, self.d),
+            R16S::HL => Word::from_le(self.l, self.h),
+        }
+    }
+
+    #[inline(always)]
+    pub fn set_r16s(&mut self, r16s: R16S, flags: &mut ALUFlags, word: Word) {
+        match r16s {
+            R16S::AF => {
+                self.a = word.high_byte();
+                flags.set_bits(word.low_byte().value());
+            }
+            R16S::BC => {
+                self.b = word.high_byte();
+                self.c = word.low_byte();
+            }
+            R16S::DE => {
+                self.d = word.high_byte();
+                self.e = word.low_byte();
+            }
+            R16S::HL => {
+                self.h = word.high_byte();
+                self.l = word.low_byte();
+            }
+        }
+    }
 }
 
 /// Outside access
@@ -152,7 +185,7 @@ impl R8 {
     pub const ALL: [R8; 8] = [R8::A, R8::B, R8::C, R8::D, R8::E, R8::H, R8::L, R8::HL];
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
 #[repr(u8)]
 pub enum R16 {
     BC = 0,
@@ -164,6 +197,20 @@ pub enum R16 {
 impl R16 {
     pub const ACC: R16 = R16::BC;
     pub const ALL: [R16; 4] = [R16::BC, R16::DE, R16::HL, R16::SP];
+}
+
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
+#[repr(u8)]
+/// Register pairs for stack operations
+pub enum R16S {
+    AF = 0,
+    BC = 1,
+    DE = 2,
+    HL = 3,
+}
+
+impl R16S {
+    pub const ALL: [R16S; 4] = [R16S::AF, R16S::BC, R16S::DE, R16S::HL];
 }
 
 impl From<u8> for R8 {
@@ -213,6 +260,18 @@ impl From<R16> for u8 {
 }
 
 impl Display for R16 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl From<R16S> for u8 {
+    fn from(value: R16S) -> Self {
+        value as u8
+    }
+}
+
+impl Display for R16S {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)
     }

@@ -1,4 +1,4 @@
-use crate::console::components::cpu::registers::{R16, R8};
+use crate::console::components::cpu::registers::{R16, R16S, R8};
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -18,6 +18,8 @@ pub enum CPUInstruction {
     IncR16(R16),
     DecR8(R8),
     DecR16(R16),
+    Push(R16S),
+    Pop(R16S),
 }
 
 impl CPUInstruction {
@@ -34,7 +36,9 @@ impl CPUInstruction {
             | Self::IncR8(_)
             | Self::IncR16(_)
             | Self::DecR8(_)
-            | Self::DecR16(_) => 1,
+            | Self::DecR16(_)
+            | Self::Push(_)
+            | Self::Pop(_) => 1,
             Self::LoadR8i(_) => 2,
             Self::LoadR16i(_) => 3,
         }
@@ -166,6 +170,14 @@ impl From<u8> for CPUInstruction {
             0x7D => CPUInstruction::IncR8(R8::H),
             0x7E => CPUInstruction::IncR8(R8::L),
             0x7F => CPUInstruction::IncR8(R8::HL),
+            0x80 => CPUInstruction::Push(R16S::AF),
+            0x81 => CPUInstruction::Push(R16S::BC),
+            0x82 => CPUInstruction::Push(R16S::DE),
+            0x83 => CPUInstruction::Push(R16S::HL),
+            0x84 => CPUInstruction::Pop(R16S::AF),
+            0x85 => CPUInstruction::Pop(R16S::BC),
+            0x86 => CPUInstruction::Pop(R16S::DE),
+            0x87 => CPUInstruction::Pop(R16S::HL),
             0x88 => CPUInstruction::DecR8(R8::A),
             0x89 => CPUInstruction::DecR8(R8::B),
             0x8A => CPUInstruction::DecR8(R8::C),
@@ -330,6 +342,18 @@ impl TryFrom<CPUInstruction> for u8 {
                 R8::L => 0x7E,
                 R8::HL => 0x7F,
             },
+            CPUInstruction::Push(r16s) => match r16s {
+                R16S::AF => 0x80,
+                R16S::BC => 0x81,
+                R16S::DE => 0x82,
+                R16S::HL => 0x83,
+            },
+            CPUInstruction::Pop(r16s) => match r16s {
+                R16S::AF => 0x84,
+                R16S::BC => 0x85,
+                R16S::DE => 0x86,
+                R16S::HL => 0x87,
+            },
             CPUInstruction::DecR8(r8) => match r8 {
                 R8::A => 0x88,
                 R8::B => 0x89,
@@ -363,6 +387,8 @@ impl Display for CPUInstruction {
             Self::IncR16(r16) => write!(f, "INC {r16}"),
             Self::DecR8(r8) => write!(f, "DEC {r8}"),
             Self::DecR16(r16) => write!(f, "DEC {r16}"),
+            Self::Push(r16s) => write!(f, "PUSH {r16s}"),
+            Self::Pop(r16s) => write!(f, "POP {r16s}"),
         }
     }
 }
