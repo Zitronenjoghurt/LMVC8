@@ -1,3 +1,4 @@
+use crate::console::components::bus::MemoryMapped;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 
@@ -21,14 +22,16 @@ impl RAM {
     pub fn reset(&mut self) {
         self.data = [0; RAM_SIZE];
     }
+}
 
+impl MemoryMapped for RAM {
     #[inline(always)]
-    pub fn read(&self, addr: Address) -> Byte {
+    fn read(&mut self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }
 
     #[inline(always)]
-    pub fn write(&mut self, addr: Address, value: Byte) {
+    fn write(&mut self, addr: Address, value: Byte) {
         self.data[(u16::from(addr) & 0x7FFF) as usize] = value.into();
     }
 }

@@ -1,4 +1,5 @@
 use crate::console::cartridge::Cartridge;
+use crate::console::input::ConsoleInput;
 use crate::console::types::address::Address;
 use std::sync::mpsc::{Receiver, Sender};
 
@@ -10,6 +11,7 @@ pub enum EmulatorCommand {
     Run,
     Pause,
     Shutdown,
+    Input(ConsoleInput),
     SetClockSpeed(u64),
     #[cfg(feature = "debugger")]
     SetBreakpoint(Address),

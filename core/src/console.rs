@@ -1,11 +1,13 @@
 use crate::console::cartridge::Cartridge;
 use crate::console::components::rom::ROM;
+use crate::console::input::ConsoleInput;
 use crate::console::step::ConsoleStep;
 use crate::error::LMVC8Result;
 use components::{bus, cpu};
 
 pub mod cartridge;
 pub mod components;
+pub mod input;
 pub mod step;
 pub mod types;
 
@@ -48,5 +50,9 @@ impl Console {
                 break;
             }
         }
+    }
+
+    pub fn input(&mut self, input: ConsoleInput) {
+        self.bus.input(input);
     }
 }

@@ -1,4 +1,4 @@
-use crate::console::components::bus::{Bus, ADDR_IA, ADDR_IE};
+use crate::console::components::bus::Bus;
 use crate::console::components::cpu::alu::ALU;
 use crate::console::components::cpu::instructions::CPUInstruction;
 use crate::console::components::cpu::interrupts::{InterruptFlags, IV_INPUT, IV_TIMER};
@@ -86,9 +86,10 @@ impl CPU {
 
     #[inline(always)]
     fn handle_interrupt(&mut self, bus: &mut Bus) {
-        // ToDo: save return addr on stack
         let interrupt_flags = self.read_ie(bus) & self.read_ia(bus);
         if let Some(interrupt) = interrupt_flags.first_set() {
+            self.ime = false;
+            self.push_word(bus, self.pc);
             match interrupt {
                 InterruptFlags::TIMER => self.pc = IV_TIMER.into(),
                 InterruptFlags::INPUT => self.pc = IV_INPUT.into(),
@@ -139,12 +140,12 @@ impl CPU {
 
     #[inline(always)]
     fn read_ie(self, bus: &mut Bus) -> InterruptFlags {
-        bus.read(ADDR_IE.into()).into()
+        bus.read(Bus::INTERRUPT_ENABLE.into()).into()
     }
 
     #[inline(always)]
     fn read_ia(self, bus: &mut Bus) -> InterruptFlags {
-        bus.read(ADDR_IA.into()).into()
+        bus.read(Bus::INTERRUPT_ACTIVE.into()).into()
     }
 }
 

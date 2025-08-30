@@ -1,4 +1,5 @@
 use crate::console::cartridge::Cartridge;
+use crate::console::components::bus::MemoryMapped;
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
 use crate::error::{LMVC8Error, LMVC8Result};
@@ -35,9 +36,14 @@ impl Default for ROM {
     }
 }
 
-impl ROM {
+impl ROM {}
+
+impl MemoryMapped for ROM {
     #[inline(always)]
-    pub fn read(&self, addr: Address) -> Byte {
+    fn read(&mut self, addr: Address) -> Byte {
         self.data[(u16::from(addr) & 0x7FFF) as usize].into()
     }
+
+    #[inline(always)]
+    fn write(&mut self, _addr: Address, _value: Byte) {}
 }

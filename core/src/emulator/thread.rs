@@ -162,6 +162,10 @@ impl EmulatorThreadContext {
                     self.step();
                 }
             }
+            EmulatorCommand::Input(input) => {
+                self.console.input(input);
+                self.update_state();
+            }
             EmulatorCommand::SetClockSpeed(cycles_per_second) => {
                 self.cycles_per_second = cycles_per_second;
                 self.update_state();

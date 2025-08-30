@@ -1,4 +1,4 @@
-use crate::console::components::bus::{ADDR_RAM_START, ADDR_SAFE_SP_START};
+use crate::console::components::bus::Bus;
 use crate::console::components::cpu::registers::{R16, R16S, R8};
 use crate::console::types::address::Address;
 use crate::console::types::byte::Byte;
@@ -130,7 +130,7 @@ fn test_load_r8(#[case] opcode: u8, #[case] r8_1: R8, #[case] r8_2: R8) {
     const VALUE_2: u8 = 0x23;
 
     let mut console = Console::builder()
-        .r16(R16::HL, ADDR_RAM_START)
+        .r16(R16::HL, Bus::RAM_START)
         .r8(r8_1, VALUE_1)
         .r8(r8_2, VALUE_2)
         .rom(opcode)
@@ -161,8 +161,8 @@ fn test_load_r8(#[case] opcode: u8, #[case] r8_1: R8, #[case] r8_2: R8) {
 #[rstest]
 #[case::ldr8_h_hl(OP_LDR8_H_HL, 0x71, R8::H, 0x71)]
 #[case::ldr8_l_hl(OP_LDR8_L_HL, 0x71, R8::L, 0x71)]
-#[case::ldr8_hl_h(OP_LDR8_HL_H, 0x71, R8::HL, (ADDR_RAM_START >> 8) as u8)]
-#[case::ldr8_hl_l(OP_LDR8_HL_L, 0x71, R8::HL, ADDR_RAM_START as u8)]
+#[case::ldr8_hl_h(OP_LDR8_HL_H, 0x71, R8::HL, (Bus::RAM_START >> 8) as u8)]
+#[case::ldr8_hl_l(OP_LDR8_HL_L, 0x71, R8::HL, Bus::RAM_START as u8)]
 fn test_load_r8_h_l_hl(
     #[case] opcode: u8,
     #[case] value_hl: u8,
@@ -170,7 +170,7 @@ fn test_load_r8_h_l_hl(
     #[case] expected: u8,
 ) {
     let mut console = Console::builder()
-        .r16(R16::HL, ADDR_RAM_START)
+        .r16(R16::HL, Bus::RAM_START)
         .r8(R8::HL, value_hl)
         .rom(opcode)
         .rom(OP_HALT)
@@ -196,7 +196,7 @@ fn test_push(#[case] opcode: u8, #[case] register: R16S) {
     const VALUE: u16 = 0x1234;
 
     let mut console = Console::builder()
-        .r16(R16::SP, ADDR_SAFE_SP_START)
+        .r16(R16::SP, Bus::DEFAULT_SP)
         .r16(R16::BC, VALUE)
         .r16(R16::DE, VALUE)
         .r16(R16::HL, VALUE)
@@ -208,13 +208,13 @@ fn test_push(#[case] opcode: u8, #[case] register: R16S) {
     console.step_till_halt();
 
     assert_eq!(
-        console.bus.read(Address::from(ADDR_SAFE_SP_START)),
+        console.bus.read(Address::from(Bus::DEFAULT_SP)),
         Byte::new((VALUE >> 8) as u8)
     );
 
     if register != R16S::AF {
         assert_eq!(
-            console.bus.read(Address::from(ADDR_SAFE_SP_START - 1)),
+            console.bus.read(Address::from(Bus::DEFAULT_SP - 1)),
             Byte::new(VALUE as u8)
         );
     }
@@ -227,9 +227,9 @@ fn test_push(#[case] opcode: u8, #[case] register: R16S) {
 #[case::pop_hl(OP_POP_HL, R16S::HL)]
 fn test_op(#[case] opcode: u8, #[case] register: R16S) {
     let mut console = Console::builder()
-        .r16(R16::SP, ADDR_SAFE_SP_START - 1)
-        .write(ADDR_SAFE_SP_START, 0x75)
-        .write(ADDR_SAFE_SP_START - 1, 0x01)
+        .r16(R16::SP, Bus::DEFAULT_SP - 1)
+        .write(Bus::DEFAULT_SP, 0x75)
+        .write(Bus::DEFAULT_SP - 1, 0x01)
         .rom(opcode)
         .rom(OP_HALT)
         .build();

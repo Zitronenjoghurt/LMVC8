@@ -3,7 +3,7 @@ use bitflags::bitflags;
 
 // ISR Vectors
 pub const IV_TIMER: u16 = 0x0040;
-pub const IV_INPUT: u16 = 0x0048;
+pub const IV_INPUT: u16 = 0x0050;
 
 bitflags! {
     #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -22,6 +22,16 @@ impl InterruptFlags {
         } else {
             Some(Self::from_bits_truncate(1 << bits.trailing_zeros()))
         }
+    }
+
+    #[inline(always)]
+    pub fn set_timer(&mut self) {
+        self.insert(InterruptFlags::TIMER);
+    }
+
+    #[inline(always)]
+    pub fn set_input(&mut self) {
+        self.insert(InterruptFlags::INPUT);
     }
 }
 

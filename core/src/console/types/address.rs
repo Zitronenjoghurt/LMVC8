@@ -1,7 +1,7 @@
 use crate::console::types::word::Word;
 use binrw::{BinRead, BinWrite};
 use std::fmt::{Display, Formatter};
-use std::ops::Sub;
+use std::ops::{RangeBounds, Sub};
 
 #[derive(Debug, Default, Copy, Clone, Hash, Eq, PartialEq, Ord, PartialOrd, BinWrite, BinRead)]
 #[brw(little)]
@@ -22,6 +22,11 @@ impl Address {
     #[inline(always)]
     pub fn set_value(&mut self, value: Word) {
         self.0 = value;
+    }
+
+    #[inline(always)]
+    pub fn is_in_range(&self, range: impl RangeBounds<u16>) -> bool {
+        range.contains(&self.0.into())
     }
 }
 
