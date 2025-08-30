@@ -1,9 +1,8 @@
-use crate::compiler::node::Node;
+use crate::compiler::node::NodeType;
 use crate::compiler::Compiler;
 
 impl Compiler {
-    pub fn breakpoint(mut self) -> Self {
-        self.nodes.push(Node::BreakPoint);
-        self
+    pub fn breakpoint(self) -> Self {
+        self.push_node(NodeType::BreakPoint)
     }
 }

@@ -1,6 +1,6 @@
 use crate::compiler::Compiler;
 use crate::console::components::cpu::instructions::CPUInstruction;
-use crate::console::components::cpu::registers::{R16, R8};
+use crate::console::components::cpu::registers::{R16, R16S, R8};
 
 impl Compiler {
     /// Will do nothing
@@ -75,5 +75,36 @@ impl Compiler {
     /// Decrement the specified register
     pub fn decrement_r16(self, r16: R16) -> Self {
         self.push_instruction(CPUInstruction::DecR16(r16))
+    }
+
+    /// Push a register pair value onto the stack
+    pub fn stack_push(self, r16s: R16S) -> Self {
+        self.push_instruction(CPUInstruction::Push(r16s))
+    }
+
+    /// Pop the value at the top of the stack into the specified register pair
+    pub fn stack_pop(self, r16s: R16S) -> Self {
+        self.push_instruction(CPUInstruction::Pop(r16s))
+    }
+
+    /// Enable interrupts, usually after critical sections (e.g. interrupt service routines)
+    pub fn enable_interrupts(self) -> Self {
+        self.push_instruction(CPUInstruction::EnableInterrupts)
+    }
+
+    /// Disable interrupts, usually before critical sections
+    pub fn disable_interrupts(self) -> Self {
+        self.push_instruction(CPUInstruction::DisableInterrupts)
+    }
+
+    /// Call a function at the specified address, will push the current PC onto the stack and jump to the address
+    pub fn call(self, address: u16) -> Self {
+        self.push_instruction(CPUInstruction::Call)
+            .push_word(address)
+    }
+
+    /// Return from a previously called function, will pop an address from stack and jump there
+    pub fn ret(self) -> Self {
+        self.push_instruction(CPUInstruction::Return)
     }
 }

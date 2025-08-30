@@ -2,8 +2,8 @@ use crate::console::types::byte::Byte;
 use bitflags::bitflags;
 
 // ISR Vectors
-pub const IV_TIMER: u16 = 0x0040;
-pub const IV_INPUT: u16 = 0x0050;
+pub const IV_TIMER: u16 = 0x0090;
+pub const IV_INPUT: u16 = 0x00A0;
 
 bitflags! {
     #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]

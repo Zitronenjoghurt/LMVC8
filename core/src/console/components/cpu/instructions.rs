@@ -20,6 +20,10 @@ pub enum CPUInstruction {
     DecR16(R16),
     Push(R16S),
     Pop(R16S),
+    EnableInterrupts,
+    DisableInterrupts,
+    Call,
+    Return,
 }
 
 impl CPUInstruction {
@@ -38,9 +42,12 @@ impl CPUInstruction {
             | Self::DecR8(_)
             | Self::DecR16(_)
             | Self::Push(_)
-            | Self::Pop(_) => 1,
+            | Self::Pop(_)
+            | Self::EnableInterrupts
+            | Self::DisableInterrupts
+            | Self::Return => 1,
             Self::LoadR8i(_) => 2,
-            Self::LoadR16i(_) => 3,
+            Self::LoadR16i(_) | Self::Call => 3,
         }
     }
 }
@@ -49,6 +56,8 @@ impl From<u8> for CPUInstruction {
     fn from(value: u8) -> Self {
         match value {
             0x00 => CPUInstruction::NoOp,
+            0x01 => CPUInstruction::EnableInterrupts,
+            0x02 => CPUInstruction::Call,
             0x04 => CPUInstruction::AddR16(R16::BC),
             0x05 => CPUInstruction::AddR16(R16::DE),
             0x06 => CPUInstruction::AddR16(R16::HL),
@@ -62,6 +71,8 @@ impl From<u8> for CPUInstruction {
             0x0E => CPUInstruction::AddR8(R8::L),
             0x0F => CPUInstruction::AddR8(R8::HL),
             0x10 => CPUInstruction::Halt,
+            0x11 => CPUInstruction::DisableInterrupts,
+            0x12 => CPUInstruction::Return,
             0x14 => CPUInstruction::SubR16(R16::BC),
             0x15 => CPUInstruction::SubR16(R16::DE),
             0x16 => CPUInstruction::SubR16(R16::HL),
@@ -197,7 +208,11 @@ impl TryFrom<CPUInstruction> for u8 {
     fn try_from(instruction: CPUInstruction) -> Result<u8, String> {
         let value = match instruction {
             CPUInstruction::NoOp => 0x00,
+            CPUInstruction::EnableInterrupts => 0x01,
+            CPUInstruction::Call => 0x02,
             CPUInstruction::Halt => 0x10,
+            CPUInstruction::DisableInterrupts => 0x11,
+            CPUInstruction::Return => 0x12,
             CPUInstruction::AddR16(r16) => match r16 {
                 R16::BC => 0x04,
                 R16::DE => 0x05,
@@ -389,6 +404,10 @@ impl Display for CPUInstruction {
             Self::DecR16(r16) => write!(f, "DEC {r16}"),
             Self::Push(r16s) => write!(f, "PUSH {r16s}"),
             Self::Pop(r16s) => write!(f, "POP {r16s}"),
+            Self::EnableInterrupts => write!(f, "EI"),
+            Self::DisableInterrupts => write!(f, "DI"),
+            Self::Call => write!(f, "CALL"),
+            Self::Return => write!(f, "RET"),
         }
     }
 }

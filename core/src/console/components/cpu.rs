@@ -80,6 +80,10 @@ impl CPU {
             CPUInstruction::DecR16(r16) => self.decrement_r16(r16),
             CPUInstruction::Push(r16s) => self.push(bus, r16s),
             CPUInstruction::Pop(r16s) => self.pop(bus, r16s),
+            CPUInstruction::EnableInterrupts => self.enable_interrupts(),
+            CPUInstruction::DisableInterrupts => self.disable_interrupts(),
+            CPUInstruction::Call => self.call(bus),
+            CPUInstruction::Return => self.ret(bus),
         }
         false
     }
@@ -238,6 +242,28 @@ impl CPU {
         let value = self.pop_word(bus);
         self.registers
             .set_r16s(r16s, self.alu.get_flags_mut(), value);
+    }
+
+    #[inline(always)]
+    pub fn enable_interrupts(&mut self) {
+        self.ime = true;
+    }
+
+    #[inline(always)]
+    pub fn disable_interrupts(&mut self) {
+        self.ime = false;
+    }
+
+    #[inline(always)]
+    pub fn call(&mut self, bus: &mut Bus) {
+        let address = self.read_word(bus);
+        self.push_word(bus, self.pc);
+        self.pc = address;
+    }
+
+    #[inline(always)]
+    pub fn ret(&mut self, bus: &mut Bus) {
+        self.pc = self.pop_word(bus);
     }
 }
 

@@ -7,6 +7,7 @@ mod node;
 #[derive(Debug, Default)]
 pub struct Compiler {
     nodes: Vec<Node>,
+    push_position: u16,
 }
 
 pub struct CompilationContext<'a> {

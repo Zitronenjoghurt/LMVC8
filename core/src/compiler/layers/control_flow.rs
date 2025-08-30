@@ -11,4 +11,13 @@ impl Compiler {
         }
         self
     }
+
+    /// Move to a certain position only for a certain context, then move back to the previous position
+    pub fn position_context<F>(self, position: u16, f: F) -> Self
+    where
+        F: Fn(Self) -> Self,
+    {
+        let previous_position = self.push_position;
+        f(self.set_push_position(position)).set_push_position(previous_position)
+    }
 }
